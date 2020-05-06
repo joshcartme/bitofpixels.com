@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if (IE 7)&!(IEMobile)]><html class="no-js lt-ie9 lt-ie8" lang="en"><![endif]-->
+<!--[if (IE 8)&!(IEMobile)]><html class="no-js lt-ie9" lang="en"><![endif]-->
+<!--[if (IE 9)]><html class="no-js ie9" lang="en"><![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en-US"> <!--<![endif]-->
+
+<!-- Mirrored from bitofpixels.com/blog/mezzatheming-part-3-pages-extra-dry/ by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 05 May 2020 23:52:45 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="keywords" content="django, mezzanine, mezzanine theme">
+<meta name="description" content="This is the third post in my series on creating themes for Mezzanine. Part 1 went over setting up base.html to provide a consistent header and footer across the whole site. Part 2 covered adding your home page to Mezzanine&#39;s CMS.">
+<title>MEZZaTHEMing Part 3: Pages, extra DRY | Bit of Pixels</title>
+<link rel="alternate" type="application/rss+xml" title="RSS" href="../feeds/rss/index.html">
+<link rel="alternate" type="application/atom+xml" title="Atom" href="../feeds/atom/index.html">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="HandheldFriendly" content="true" />
+<meta name="MobileOptimized" content="320" />
+
+<!--[if IEMobile]>  <meta http-equiv="cleartype" content="on">  <![endif]-->
+<link rel="stylesheet" href="../../static/CACHE/css/4d40634b3931.css" type="text/css" />
+
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,300,300italic,400italic,600,600italic,700,700italic,800,800italic" rel='stylesheet' type='text/css'>
+
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../static/ico/apple-touch-icon-144-precomposed3860.png?v=1">
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="../../static/ico/apple-touch-icon-114-precomposed3860.png?v=1">
+<link rel="apple-touch-icon-precomposed" sizes="72x72" href="../../static/ico/apple-touch-icon-72-precomposed3860.png?v=1">
+<link rel="apple-touch-icon-precomposed" href="../../static/ico/apple-touch-icon-57-precomposed3860.png?v=1">
+<link rel="shortcut icon" href="../../static/ico/favicon5e1f.png?v=2">
+<link rel="apple-touch-icon" href="#">
+<link rel="apple-touch-icon" sizes="114x114" href="#">
+<link rel="apple-touch-icon" sizes="72x72" href="#">
+<link rel="apple-touch-icon" sizes="144x144" href="#">
+<script type="text/javascript" src="../../static/CACHE/js/4e8fecc2c196.js"></script>
+</head>
+<body id="body">
+
+<header>
+<div class="container">
+<div class="row">
+<div class="span2">
+<div id="logo">
+<a href="../../index.html" title="Bit of Pixels"><span class="logo-red">b</span><span class="logo-blue">P</span><span class="logo-green">x</span></a>
+</div>
+</div>
+<div class="span10">
+
+<a id="mobile-nav" class="menu-nav" href="#menu-nav"><span class="menu-icon"></span></a>
+
+<nav id="menu">
+<ul id="menu-nav"><li class="" id="dropdown-menu-home"><a href="../../index.html">Home</a></li><li class="dropdown active" id="dropdown-menu-blog"><a href="../index.html">
+Blog
+</a></li><li class="dropdown" id="dropdown-menu-portfolio"><a href="../../portfolio/index.html">
+Portfolio
+</a></li></ul>
+</nav>
+</div>
+</div>
+</div>
+</header>
+
+<section id="image-static">
+<div class="fullimage-container">
+<div class="pattern"></div>
+<img src="../../static/media/uploads/blog/.thumbnails/drum-1500x0.jpg">
+</div>
+</section>
+
+<section id="intro-box" class="single-post">
+<div class="container">
+<div class="row">
+<div class="span12">
+<h2 class="entry-title">MEZZaTHEMing Part 3: Pages, extra DRY</h2>
+<div class="entry-meta">
+<span class="author">By Josh Cartmell</span>
+<span class="divider">/</span>
+<span class="published">6 years, 7 months ago</span>
+<span class="divider">/</span>
+<a href="index.html#disqus_thread" data-disqus-identifier="BlogPost-9">Comments</a>
+</div>
+<span class="arrow"></span>
+</div>
+</div>
+</div>
+</section>
+
+<div id="content">
+
+<section id="blog" class="container single-post">
+<div class="row">
+<div class="span9">
+
+<article class="post">
+<div class="entry-content">
+<p>This is the third post in my series on creating themes for Mezzanine. <a href="../mezzatheming-creating-mezzanine-themes-part-1-basehtml/index.html">Part 1</a> went over setting up base.html to provide a consistent header and footer across the whole site. <a href="../mezzatheming-part-2-the-homepage/index.html">Part 2</a> covered adding your home page to Mezzanine's CMS.</p>
+<p>In this post I will describe the process that I use to style the built in page types. I begin with a bit of the philosophy I try to adhere to. After I wax poetic I'll get back to the nuts and bolts, so hang in there!</p>
+<h2>The DRY Approach</h2>
+<p>A good goal in programming is to make your code as DRY (don't repeat yourself) as possible. As I develop Mezzanine themes I always try to keep that in mind. Djagno's template inheritance encourages this and if you read the first post in this series you've already seen this in action. The header and footer are defined in base.html and nowhere else. This is great because if you wanted to change something about either of those you would just need to modify base.html and the changes would show up everywhere. The drought (see what I did there?) shouldn't stop with base.html, it should reach as far into your templates as possible.</p>
+<p>The default templates that come with Mezzanine are great example of very DRY templates. Most if not all of the built in page types have templates that define no additional markup and just make use of the Django blocks defined in base.html. Whenever I am creating a Mezzanine theme I try to do the same. The more individuated and complex the design for a particular page becomes the more difficult this can become. An extreme example of this is the <code>{% block all_content %}</code> I wrap all of base.html's content blocks with and described in my <a href="../mezzatheming-part-2-the-homepage/index.html">last post</a>. I use the <code>all_content</code> block as sparingly as is realistically possible (the homepage in the last post is an example of its use), trying to maintain the DRYness of my templates.</p>
+<h3>Finding water in the desert</h3>
+<p>Making templates DRY sounds great, but sometimes it is a major pain and it seems much simpler to not worry about it. That may be true on occasion, but usually the short term time savings will not be worth the headaches that can arise if your templates aren't DRY.</p>
+<p>The following are some tips, tricks and common idioms that help me make my templates DRYer. Once I remove stuff from the panels to make it shorter, Mezzanine's default base.html looks essentially like this (note that the blocks and main markup are intact):</p>
+<div class="codehilite"><pre><span class="x">&lt;div class="container"&gt;</span>
+<span class="x">    &lt;div class="row"&gt;</span>
+<span class="x">        &lt;div class="span2 left"&gt;</span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">left_panel</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">        &lt;/div&gt;</span>
+<span class="x">        &lt;div class="span7 middle"&gt;</span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">main</span> <span class="cp">%}{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">        &lt;/div&gt;</span>
+<span class="x">        &lt;div class="span3 right"&gt;</span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">right_panel</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">        &lt;/div&gt;</span>
+<span class="x">    &lt;/div&gt;</span>
+<span class="x">&lt;/div&gt;</span>
+</pre></div>
+<p>The first thing I would do is add an <code>all_content</code> block, depending on the situation and how I was planning on using it, this would either go outside the container or immediately after the row. The next thing I might do is wrap each of the span divs in another block, i.e.:</p>
+<div class="codehilite"><pre><span class="cp">{%</span> <span class="k">block</span> <span class="nv">left_panel_wrapper</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">&lt;div class="span2 left"&gt;</span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">left_panel</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">&lt;/div&gt;</span>
+<span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+</pre></div>
+<p>Then if I don't want the left panel to show up in a particular template I can simply add this line to it:</p>
+<div class="codehilite"><pre><span class="cp">{%</span> <span class="k">block</span> <span class="nv">left_panel_wrapper</span> <span class="cp">%}{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+</pre></div>
+<p>Another trick is to add a span size block to some or all of the main content blocks blocks, i.e.:</p>
+<div class="codehilite"><pre><span class="x">&lt;div class="span</span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">main_span_size</span> <span class="cp">%}</span><span class="x">7</span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"> middle"&gt;</span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">main</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">&lt;/div&gt;</span>
+</pre></div>
+<p>After using the first trick to remove the left panel I could add the following to the same template to make the main content fill the extra space:</p>
+<div class="codehilite"><pre><span class="cp">{%</span> <span class="k">block</span> <span class="nv">main_span_size</span> <span class="cp">%}</span><span class="x">9</span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+</pre></div>
+<p>Taken together these two tricks can help you avoid writing the same markup in templates with slightly different span configurations.</p>
+<p>Often times the markup for the content of two html pages (a blog and gallery for example) will be almost identical save for a different css class. A simple, but shortsited approach would be to use the <code>all_content</code> block and then rewrite the exact same markup changing only a css class. A smarter approach is to add a class block to each of the content blocks (aside: depending on a number of factors including how many shared css classes there are it may or may not make sense to use this trick in combination with the previous span size block trick). These class blocks could look like this:</p>
+<div class="codehilite"><pre><span class="x">&lt;div class="span7 </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">main_class</span> <span class="cp">%}</span><span class="x">middle</span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x">"&gt;</span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">main</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">&lt;/div&gt;</span>
+</pre></div>
+<p>“middle” would be the default class but in a template you could add:</p>
+<div class="codehilite"><pre><span class="cp">{%</span> <span class="k">block</span> <span class="nv">main_class</span> <span class="cp">%}</span><span class="x">gallery</span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+</pre></div>
+<p>or</p>
+<div class="codehilite"><pre><span class="cp">{%</span> <span class="k">block</span> <span class="nv">main_class</span> <span class="cp">%}</span><span class="x">blog</span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+</pre></div>
+<p>to create the correct styling for your blog or gallery pages.</p>
+<p>Using all of these idioms together the content sections of your base.html might end up looking like:</p>
+<div class="codehilite"><pre><span class="x">&lt;div class="container"&gt;</span>
+<span class="x">    &lt;div class="row"&gt;</span>
+
+<span class="x">        </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">left_wrapper</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">        &lt;div class="span</span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">left_span_size</span> <span class="cp">%}</span><span class="x">2</span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"> </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">left_class</span> <span class="cp">%}</span><span class="x">left</span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x">"&gt;</span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">left_panel</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">        &lt;/div&gt;</span>
+<span class="x">        </span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+
+<span class="x">        </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">main_wrapper</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">        &lt;div class="span</span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">main_span_size</span> <span class="cp">%}</span><span class="x">7</span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"> </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">main_class</span> <span class="cp">%}</span><span class="x">middle</span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x">"&gt;</span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">main</span> <span class="cp">%}{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">        &lt;/div&gt;</span>
+<span class="x">        </span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+
+<span class="x">        </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">right_wrapper</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">        &lt;div class="span</span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">right_span_size</span> <span class="cp">%}</span><span class="x">3</span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"> </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">right_class</span> <span class="cp">%}</span><span class="x">right</span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x">"&gt;</span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">right_panel</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">        &lt;/div&gt;</span>
+<span class="x">        </span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+
+<span class="x">    &lt;/div&gt;</span>
+<span class="x">&lt;/div&gt;</span>
+</pre></div>
+<p>Don't get me wrong, I'm not advocating that you use every single one of these tricks in every project; use them when they help you make your code DRYer.</p>
+<h2>Desert[sic] was first, back to the main course</h2>
+<p>Now that I have the background and reasoning out of the way I'll show you how to apply those principles to the theme that we are making, <a href="https://mezzathe.me/theme/lucid/">Lucid</a>.</p>
+<h3>Pages</h3>
+<p>As things stand, if you run your dev server you can visit the home page, but any other page will just show the header and footer. This is because the template blocks that Mezzanine makes use of to display content have not yet been created.</p>
+<p>As discussed in detail above, we want to keep our templates DRY: let's open up a few of the html pages from the downloaded template that we are basing our theme on and see how similar they are structurally. I opened up about.html and blog.html, I scrolled down to about line 80 in each of them and compared their <code>&lt;!--page_container--&gt;</code> sections. We are in luck, they are very similar.</p>
+<p>One thing I don't like about the downloaded template is that the about page (which I am basing a lot of this on) has a content section that is basically full width with a lot of random span sizes. Rather than have the content pages have a full width content section, I'll have the content be a span8 and show the blog filter panel on pages. Something else to notice about the template is that titles are only shown in the breadcrumb menu. To handle this I'll make a custom breadcrumb menu template that doesn't show the current page and then separately show it with a title block. All in all my base.html (excluding the head, header and footer) now looks like this:</p>
+<div class="codehilite"><pre><span class="cp">{%</span> <span class="k">block</span> <span class="nv">all_content</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">&lt;!--page_container--&gt;</span>
+<span class="x">&lt;div class="page_container"&gt;</span>
+<span class="x">    &lt;div class="breadcrumb"&gt;</span>
+<span class="x">        &lt;div class="wrap"&gt;</span>
+<span class="x">            &lt;div class="container"&gt;</span>
+<span class="x">                &lt;ul class="breadcrumb"&gt;</span>
+<span class="x">                </span><span class="cp">{%</span> <span class="k">spaceless</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">                </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">breadcrumb_menu</span> <span class="cp">%}{%</span> <span class="k">page_menu</span> <span class="s2">"pages/menus/breadcrumb.html"</span> <span class="cp">%}{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">                </span><span class="cp">{%</span> <span class="k">endspaceless</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">                &lt;li class="active"&gt;</span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">title</span> <span class="cp">%}{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x">&lt;/li&gt;</span>
+<span class="x">                &lt;/ul&gt;</span>
+<span class="x">            &lt;/div&gt;</span>
+<span class="x">        &lt;/div&gt;</span>
+<span class="x">    &lt;/div&gt;</span>
+<span class="x">    &lt;div class="wrap"&gt;</span>
+<span class="x">        &lt;div class="container"&gt;</span>
+<span class="x">            &lt;div class="row"&gt;</span>
+<span class="x">                &lt;div class="span8"&gt;</span>
+<span class="x">                    </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">main</span> <span class="cp">%}{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">                &lt;/div&gt;</span>
+<span class="x">                &lt;div class="span4"&gt;</span>
+<span class="x">                    </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">right_panel</span> <span class="cp">%}{%</span> <span class="k">include</span> <span class="s2">"blog/includes/filter_panel.html"</span> <span class="cp">%}{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">                &lt;/div&gt;</span>
+<span class="x">            &lt;/div&gt;</span>
+<span class="x">        &lt;/div&gt;</span>
+<span class="x">    &lt;/div&gt;</span>
+<span class="x">&lt;/div&gt;</span>
+<span class="x">&lt;!--//page_container--&gt;</span>
+<span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+</pre></div>
+<p>At this point you could decide you are finished. We had a problem: the header and footer showed on all pages except the home page; this problem has been eliminated through using the blocks that Mezzanine expects; your site will now have a consistent look and feel. If you are satisfied feel free to stop reading, but I am not and will continue writing! The template we are converting to a Mezzanine theme still has a great blog design that we haven't implemented: there is a design for the contact page, and we can create Portfolio content types and then reuse those Portfolio pages for Mezzanine's galleries. I'll go over styling the galleries right now, a later post will cover the blog and portfolio and once you've finished going through all these posts you will be an expert and more than capable of styling the contact page on your own.</p>
+<h3>Galleries</h3>
+<p>The portfolio page of the template we are working with is essentially a gallery, it just has some extras that don't fit the requirements of Mezzanine's galleries (categories, links, etc...). With that in mind it should be easy to update the design of Mezzanine Galleries to match.</p>
+<p>Let's start by getting the default gallery template:</p>
+<div class="codehilite"><pre><span class="nv">$ </span>python manage.py collecttemplates -t pages/gallery.html
+<span class="nv">$ </span>mv templates/pages/gallery.html theme/templates/pages/
+</pre></div>
+<p>Open gallery.html and delete the <code>extra_js</code> block, it's specific to Mezzanine's implementation and we don't need it.</p>
+<p>Next open one of the portfolio templates that we downloaded (I'll work with the three column style). In the downloaded template scroll down to about line 80 where it says <code>&lt;!--page_container--&gt;</code>. The breadcrumb menu is the same as before, but there is the extra options div (which we won't use since it doesn't apply to galleries) and rather than a span8 and a span4 the portfolio is just a bunch of span4s, each one a portfolio item (in our case gallery pictures). Its markup and classes are a bit different than the other pages we looked at and used to set up base.html, but we can easily use some of the tips and tricks I discussed before to make it work.</p>
+<p>The first difference I notice is that the outer <code>&lt;div class="container"&gt;</code> also has the class <code>inner_content</code>. I contemplate creating a <code>container_class</code> block to insert it, but before doing that I search through all the downloaded template files. The inner_content class is actually never used so it can safely be deleted. I'm tempted to also remove the <code>&lt;div class="projects"&gt;</code> but a search reveals that it is used as a selector in some javascript so it should be included. I end up deciding to create <code>main_wrapper</code> and <code>right_wrapper</code> blocks and simply override those sections. To actually set up the gallery page I copy and paste this into my gallery.html:</p>
+<div class="codehilite"><pre><span class="x">&lt;div class="projects"&gt;                                  </span>
+<span class="x">    &lt;div class="span4 element category01" data-category="category01"&gt;</span>
+<span class="x">        &lt;div class="hover_img"&gt;</span>
+<span class="x">            &lt;img src="img/portfolio/1.jpg" alt="" /&gt;</span>
+<span class="x">            &lt;span class="portfolio_zoom"&gt;&lt;a href="img/portfolio/1.jpg" rel="prettyPhoto[portfolio1]"&gt;&lt;/a&gt;&lt;/span&gt;</span>
+<span class="x">            &lt;span class="portfolio_link"&gt;&lt;a href="single_portfolio.html"&gt;View item&lt;/a&gt;&lt;/span&gt;</span>
+<span class="x">        &lt;/div&gt;</span>
+<span class="x">        &lt;div class="item_description"&gt;</span>
+<span class="x">            &lt;h6&gt;&lt;a href="single_portfolio.html"&gt;Lorem ipsum dolor&lt;/a&gt;&lt;/h6&gt;</span>
+<span class="x">            &lt;div class="descr"&gt;Et dicta essent vis, sed vitae dictas vulputate ea, ex zril quaeque mentitum quo.&lt;/div&gt;</span>
+<span class="x">        &lt;/div&gt;                                    </span>
+<span class="x">    &lt;/div&gt;</span>
+</pre></div>
+<p>I then go through and cut and paste relevant parts of the existing gallery code into the code we inserted into the Gallery template. The first thing I do is wrap the span4 div in the forloop that iterates through gallery images. I delete those elements that don't apply and hook up those that do. Finally, I delete the remaining, old gallery markup. In the end, gallery.html looks like this:</p>
+<div class="codehilite"><pre><span class="cp">{%</span> <span class="k">extends</span> <span class="s2">"pages/page.html"</span> <span class="cp">%}</span><span class="x"></span>
+
+<span class="cp">{%</span> <span class="k">load</span> <span class="nv">mezzanine_tags</span> <span class="nv">staticfiles</span> <span class="cp">%}</span><span class="x"></span>
+
+<span class="cp">{%</span> <span class="k">block</span> <span class="nv">main_wrapper</span> <span class="cp">%}</span><span class="x"></span>
+<span class="cp">{{</span> <span class="nb">block</span><span class="nv">.super</span> <span class="cp">}}</span><span class="x"></span>
+
+<span class="x">&lt;div class="span12"&gt;</span>
+<span class="cp">{%</span> <span class="k">editable</span> <span class="nv">page.gallery.content</span> <span class="cp">%}</span><span class="x"></span>
+<span class="cp">{{</span> <span class="nv">page.gallery.content</span><span class="o">|</span><span class="nf">richtext_filters</span><span class="o">|</span><span class="nf">safe</span> <span class="cp">}}</span><span class="x"></span>
+<span class="cp">{%</span> <span class="k">endeditable</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">&lt;/div&gt;</span>
+
+<span class="x">&lt;div class="projects"&gt;</span>
+<span class="cp">{%</span> <span class="k">with</span> <span class="nv">page.gallery.images.all</span> <span class="k">as</span> <span class="nv">images</span> <span class="cp">%}</span><span class="x"></span>
+<span class="cp">{%</span> <span class="k">for</span> <span class="nv">image</span> <span class="k">in</span> <span class="nv">images</span> <span class="cp">%}</span><span class="x">                                 </span>
+<span class="x">    &lt;div class="span4 element"&gt;</span>
+<span class="x">        &lt;div class="hover_img"&gt;</span>
+<span class="x">            &lt;img src="</span><span class="cp">{{</span> <span class="nv">MEDIA_URL</span> <span class="cp">}}{%</span> <span class="k">thumbnail</span> <span class="nv">image.file</span> <span class="m">370</span> <span class="m">185</span> <span class="cp">%}</span><span class="x">" alt="" /&gt;</span>
+<span class="x">            &lt;span class="portfolio_zoom"&gt;&lt;a href="</span><span class="cp">{{</span> <span class="nv">MEDIA_URL</span> <span class="cp">}}{%</span> <span class="k">thumbnail</span> <span class="nv">image.file</span> <span class="m">1200</span> <span class="m">0</span> <span class="cp">%}</span><span class="x">" rel="prettyPhoto[portfolio1]"&gt;&lt;/a&gt;&lt;/span&gt;</span>
+<span class="x">        &lt;/div&gt;</span>
+<span class="x">        &lt;div class="item_description"&gt;</span>
+<span class="x">            &lt;h6&gt;</span><span class="cp">{{</span> <span class="nv">image.description</span> <span class="cp">}}</span><span class="x">&lt;/h6&gt;</span>
+<span class="x">        &lt;/div&gt;                                    </span>
+<span class="x">    &lt;/div&gt;</span>
+<span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span><span class="x"></span>
+<span class="cp">{%</span> <span class="k">endwith</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">&lt;/div&gt;</span>
+<span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+
+<span class="cp">{%</span> <span class="k">block</span> <span class="nv">right_wrapper</span> <span class="cp">%}{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+</pre></div>
+<p>and I've updated the base.html content blocks to this:</p>
+<div class="codehilite"><pre><span class="cp">{%</span> <span class="k">block</span> <span class="nv">main_wrapper</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">&lt;div class="span8"&gt;</span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">main</span> <span class="cp">%}{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">&lt;/div&gt;</span>
+<span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+<span class="cp">{%</span> <span class="k">block</span> <span class="nv">right_wrapper</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">&lt;div class="span4"&gt;</span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">right_panel</span> <span class="cp">%}{%</span> <span class="k">include</span> <span class="s2">"blog/includes/filter_panel.html"</span> <span class="cp">%}{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">&lt;/div&gt;</span>
+<span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x">\</span>
+</pre></div>
+<p>Going to a gallery should now show you a page that looks very similar to the downloaded templates portfolio. Hovering over the image provides a link, to show a larger version, but wait...the link is off center. The reason for this is that we deleted another link that was next to it. To fix this open theme/static/css/theme.css and around line 729, in the portfolio section update the last bit of the margin from -33px to -16.5px. The reasoning for this is that the link image is 33px and we want to pull it half of its width to the left so that it is exactly dead center.</p>
+<p>If you've made it this far, congratulations. We have more styling to do, but at this point you really have created a full Mezzanine theme. Stay tuned for the next post and ask your questions and let me know what you think so far in the comments below.</p>
+</div>
+<div class="entry-meta entry-footer">
+<span class="related-tags">
+Related posts:
+<a href="../mezzatheming-part-4-style-the-blog-and-beyond/index.html">MEZZaTHEMing Part 4: To the blog, and beyond</a>,
+<a href="../mezzatheming-part-2-the-homepage/index.html">MEZZaTHEMing Part 2: The HomePage</a>,
+<a href="../mezzatheming-creating-mezzanine-themes-part-1-basehtml/index.html">MEZZaTHEMing (creating Mezzanine themes) Part 1: base.html</a>
+<span class="divider">/</span>
+</span>
+<span class="entry-tags">
+Tagged:
+<a href="../tag/django/index.html">django</a>,
+<a href="../tag/mezzanine/index.html">mezzanine</a>,
+<a href="../tag/mezzanine-theme/index.html">mezzanine theme</a>
+</span>
+</div>
+<div class="separator"></div>
+</article>
+
+<script>
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'bitofpixels'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function () {
+    var s = document.createElement('script'); s.async = true;
+    s.type = 'text/javascript';
+    s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+    (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+}());
+</script>
+<div id="comments">
+<h3>Comments</h3>
+<div id="disqus_thread"></div>
+<script>
+var disqus_config = function () {
+    this.page.remote_auth_s3 = '';
+    this.page.api_key = '';
+}
+</script>
+<script>
+    var disqus_developer = 'False' == 'True';
+    var disqus_url = 'index.html';
+    var disqus_title = 'MEZZaTHEMing Part 3: Pages, extra DRY';
+    var disqus_identifier = 'BlogPost-9';
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = '../../../bitofpixels.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+</div>
+</div>
+
+<div class="span3">
+<aside id="sidebar">
+<div id="search" class="widget widget-search">
+<form method="get" id="searchform" action="#">
+<input type="text" placeholder="To search type and hit enter..." value="" />
+</form>
+</div>
+<div class="widget blog-sidebar">
+<h3>Recent Posts</h3>
+<ul class="unstyled recent-posts">
+<li><a href="../upgrading-to-mezzanine-4/index.html">Upgrading to Mezzanine 4</a></li>
+<li><a href="../collecting-additional-information-on-a-per-product-basis-in-cartridge/index.html">Collecting additional information on a per product basis in Cartridge</a></li>
+<li><a href="../deploying-mezzanine-to-digital-ocean-using-the-included-fabfile/index.html">Deploying Mezzanine to Digital Ocean using the included fabfile</a></li>
+<li><a href="../on-singletonadmins-and-sitewidecontent-editing-sitewide-content-in-mezzanines-admin/index.html">On SingletonAdmins and SitewideContent (editing sitewide content in Mezzanine&#39;s admin)</a></li>
+<li><a href="../mezzatheming-part-4-style-the-blog-and-beyond/index.html">MEZZaTHEMing Part 4: To the blog, and beyond</a></li>
+</ul>
+<h3>Archive</h3>
+<h6>2015</h6><ul class="unstyled">
+<li><a href="../archive/2015/7/index.html">July</a> (1)</li>
+</ul>
+<h6>2014</h6><ul class="unstyled">
+<li><a href="../archive/2014/5/index.html">May</a> (1)</li>
+<li><a href="../archive/2014/4/index.html">April</a> (1)</li>
+</ul>
+<h6>2013</h6><ul class="unstyled">
+<li><a href="../archive/2013/9/index.html">September</a> (5)</li>
+<li><a href="../archive/2013/8/index.html">August</a> (1)</li>
+<li><a href="../archive/2013/7/index.html">July</a> (2)</li>
+<li><a href="../archive/2013/6/index.html">June</a> (3)</li>
+</ul>
+<h3>Tags</h3>
+<ul class="unstyled tags">
+<li>
+<a href="../tag/mezzanine/index.html" class="tag-weight-4">mezzanine</a>
+(10)
+</li>
+<li>
+<a href="../tag/django/index.html" class="tag-weight-4">django</a>
+(12)
+</li>
+<li>
+<a href="../tag/mezzanine-theme/index.html" class="tag-weight-1">mezzanine theme</a>
+(4)
+</li>
+</ul>
+<h3>Authors</h3>
+<ul class="unstyled">
+<li><a href="../author/josh/index.html">Josh Cartmell</a>
+(14)</li>
+</ul>
+<h3>Feeds</h3>
+<a href="../feeds/rss/index.html">RSS</a> /
+<a href="../feeds/atom/index.html">Atom</a>
+</div>
+<div class="widget widget-social">
+<h3 class="widget-title">Elsewhere</h3>
+<ul>
+<li><a href="https://www.flickr.com/photos/joshcartmell"><i class="font-icon-social-flickr"></i></a></li>
+<li><a href="https://github.com/joshcartme"><i class="font-icon-social-github"></i></a></li>
+<li><a href="https://twitter.com/joshcartme"><i class="font-icon-social-twitter"></i></a></li>
+</ul>
+</div>
+</aside>
+</div>
+
+</div>
+</section>
+</div>
+
+<footer>
+<div class="container">
+<div class="row">
+<nav id="social-footer">
+<ul>
+<li><a href="https://twitter.com/joshcartme" title=""><i class="font-icon-social-twitter"></i></a></li>
+</ul>
+</nav>
+</div>
+</div>
+</footer>
+
+
+<section id="footer-credits">
+<div class="container">
+<div class="row">
+<div class="span12">
+<p class="credits">&copy; 2020 <a target="_blank" href="https://joshc.io/">Josh Cartmell</a>. All rights reserved.</p>
+</div>
+</div>
+</div>
+</section>
+
+
+<a id="back-to-top" href="#">
+<i class="font-icon-arrow-simple-up"></i>
+</a>
+
+<script>
+
+var _gaq = _gaq || [['_trackPageview']];
+_gaq.unshift(['_setAccount', 'UA-31556206-1']);
+(function(d, t) {
+    var g = d.createElement(t),
+        s = d.getElementsByTagName(t)[0];
+    g.async = true;
+    g.src = '../../../www.google-analytics.com/ga.js';
+    s.parentNode.insertBefore(g, s);
+})(document, 'script');
+
+</script>
+</body>
+
+<!-- Mirrored from bitofpixels.com/blog/mezzatheming-part-3-pages-extra-dry/ by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 05 May 2020 23:52:54 GMT -->
+</html>

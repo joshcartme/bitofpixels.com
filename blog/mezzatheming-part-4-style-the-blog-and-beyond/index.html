@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if (IE 7)&!(IEMobile)]><html class="no-js lt-ie9 lt-ie8" lang="en"><![endif]-->
+<!--[if (IE 8)&!(IEMobile)]><html class="no-js lt-ie9" lang="en"><![endif]-->
+<!--[if (IE 9)]><html class="no-js ie9" lang="en"><![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en-US"> <!--<![endif]-->
+
+<!-- Mirrored from bitofpixels.com/blog/mezzatheming-part-4-style-the-blog-and-beyond/ by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 05 May 2020 23:52:13 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="keywords" content="django, mezzanine, mezzanine theme">
+<meta name="description" content="This is the fourth and final part of my tutorial series on creating Mezzanine themes. Throughout the tutorial I have been going over the process of taking static html and using it to develop a Mezzanine theme. I&#39;ve been working with the html template that is available here, but the methods I discuss could be used to develop a Mezzanine theme based on a PSD to html conversion, or any other number of potential sources of styled html. The first post went over the process of creating base.html which is the foundation of the rest of a Mezzanine theme. Part two taught you to take that foundation and create a backend editable page to be your site&#39;s home page. The third post described how to make templates DRY and applied those principals to styling Mezzanine&#39;s default pages, including a custom design for the gallery. This post will focus on styling the blog and creating more custom content types, adding Portfolio capabilities to our theme.">
+<title>MEZZaTHEMing Part 4: To the blog, and beyond | Bit of Pixels</title>
+<link rel="alternate" type="application/rss+xml" title="RSS" href="../feeds/rss/index.html">
+<link rel="alternate" type="application/atom+xml" title="Atom" href="../feeds/atom/index.html">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="HandheldFriendly" content="true" />
+<meta name="MobileOptimized" content="320" />
+
+<!--[if IEMobile]>  <meta http-equiv="cleartype" content="on">  <![endif]-->
+<link rel="stylesheet" href="../../static/CACHE/css/4d40634b3931.css" type="text/css" />
+
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,300,300italic,400italic,600,600italic,700,700italic,800,800italic" rel='stylesheet' type='text/css'>
+
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../static/ico/apple-touch-icon-144-precomposed3860.png?v=1">
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="../../static/ico/apple-touch-icon-114-precomposed3860.png?v=1">
+<link rel="apple-touch-icon-precomposed" sizes="72x72" href="../../static/ico/apple-touch-icon-72-precomposed3860.png?v=1">
+<link rel="apple-touch-icon-precomposed" href="../../static/ico/apple-touch-icon-57-precomposed3860.png?v=1">
+<link rel="shortcut icon" href="../../static/ico/favicon5e1f.png?v=2">
+<link rel="apple-touch-icon" href="#">
+<link rel="apple-touch-icon" sizes="114x114" href="#">
+<link rel="apple-touch-icon" sizes="72x72" href="#">
+<link rel="apple-touch-icon" sizes="144x144" href="#">
+<script type="text/javascript" src="../../static/CACHE/js/4e8fecc2c196.js"></script>
+</head>
+<body id="body">
+
+<header>
+<div class="container">
+<div class="row">
+<div class="span2">
+<div id="logo">
+<a href="../../index.html" title="Bit of Pixels"><span class="logo-red">b</span><span class="logo-blue">P</span><span class="logo-green">x</span></a>
+</div>
+</div>
+<div class="span10">
+
+<a id="mobile-nav" class="menu-nav" href="#menu-nav"><span class="menu-icon"></span></a>
+
+<nav id="menu">
+<ul id="menu-nav"><li class="" id="dropdown-menu-home"><a href="../../index.html">Home</a></li><li class="dropdown active" id="dropdown-menu-blog"><a href="../index.html">
+Blog
+</a></li><li class="dropdown" id="dropdown-menu-portfolio"><a href="../../portfolio/index.html">
+Portfolio
+</a></li></ul>
+</nav>
+</div>
+</div>
+</div>
+</header>
+
+<section id="image-static">
+<div class="fullimage-container">
+<div class="pattern"></div>
+<img src="../../static/media/uploads/blog/.thumbnails/pedals-1500x0.jpg">
+</div>
+</section>
+
+<section id="intro-box" class="single-post">
+<div class="container">
+<div class="row">
+<div class="span12">
+<h2 class="entry-title">MEZZaTHEMing Part 4: To the blog, and beyond</h2>
+<div class="entry-meta">
+<span class="author">By Josh Cartmell</span>
+<span class="divider">/</span>
+<span class="published">6 years, 7 months ago</span>
+<span class="divider">/</span>
+<a href="index.html#disqus_thread" data-disqus-identifier="BlogPost-10">Comments</a>
+</div>
+<span class="arrow"></span>
+</div>
+</div>
+</div>
+</section>
+
+<div id="content">
+
+<section id="blog" class="container single-post">
+<div class="row">
+<div class="span9">
+
+<article class="post">
+<div class="entry-content">
+<p>This is the fourth and final part of my tutorial series on creating Mezzanine themes. Throughout the tutorial I have been going over the process of taking static html and using it to develop a Mezzanine theme. I've been working with the html template that is available <a href="http://www.templatescreme.com/free-website-jessica-white-free-bootstrap-website">here</a>, but the methods I discuss could be used to develop a Mezzanine theme based on a PSD to html conversion, or any other number of potential sources of styled html. <a href="../mezzatheming-creating-mezzanine-themes-part-1-basehtml/index.html">The first post</a> went over the process of creating base.html which is the foundation of the rest of a Mezzanine theme. <a href="../mezzatheming-part-2-the-homepage/index.html">Part two</a> taught you to take that foundation and create a backend editable page to be your site's home page. <a href="../mezzatheming-part-3-pages-extra-dry/index.html">The third post</a> described how to make templates DRY and applied those principals to styling Mezzanine's default pages, including a custom design for the gallery. This post will focus on styling the blog and creating more custom content types, adding Portfolio capabilities to our theme.</p>
+<p>I don't think I have any philosophizing, contemplating or other rubbish today, let's jump right to it.</p>
+<h2>The blog</h2>
+<p>First up, copy the blog templates into your theme app:</p>
+<div class="codehilite"><pre><span class="nv">$ </span>python manage.py collecttemplates mezzanine.blog
+<span class="nv">$ </span>mv templates/blog/ theme/templates/
+</pre></div>
+<blockquote>
+<p>I generally don't use collecttemplates to copy all of an apps
+templates because it usually ends up copying a lot of
+templates that I don't want. In the case of the blog I know
+from experience that it is only going to copy three templates and that
+I almost certainly will be editing all three of them.</p>
+</blockquote>
+<p>This is a good time to add some sample blog posts to your dev site (if you haven't set <code>BLOG_USE_FEATURED_IMAGE</code> to True in your settings.py do that now).</p>
+<blockquote>
+<p><a href="http://www.lipsum.com/">This site</a> is a great resource for generating filler text.</p>
+</blockquote>
+<h3>blog_post_list.html</h3>
+<p>With some test blog posts up, head over to the blog section of your development site. It doesn't look bad, but it doesn't look like the template we are working with. Open the downloaded theme's blog.html in both a browser and a text editor and open the newly copied blog_post_list.html in an editor.</p>
+<p>Scroll down in the downloaded template to about line 80 where you see <code>&lt;!--page_container--&gt;</code>. As you know if you've read my other posts, this is the main content area and the way we have designed our base.html the blog will easily fit in. There are no extra css classes or markup (except the wrapping <code>&lt;section&gt;</code> which I will remove since it seems to serve no practical purpose) so we can work directly with our <code>main</code> and <code>right_panel</code> blocks. After reviewing the downloaded template I see that each post is a <code>&lt;div class="post"&gt;</code> directly inside the <code>span8</code> (our main block). I copy one of the post divs and paste it into blog_post_list.html, directly after <code>{% for blog_post in blog_posts.object_list %}</code> inside <code>{% block main %}</code>. I now have:</p>
+<div class="codehilite"><pre><span class="cp">{%</span> <span class="k">for</span> <span class="nv">blog_post</span> <span class="k">in</span> <span class="nv">blog_posts.object_list</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">&lt;div class="post"&gt;</span>
+<span class="x">    &lt;h2 class="title"&gt;&lt;span&gt;&lt;a href="blog_post.html"&gt;Lorem Ipsum is simply dummy text&lt;/a&gt;&lt;/span&gt;&lt;/h2&gt;</span>
+<span class="x">    &lt;img src="img/blog/1.jpg" alt="" /&gt;</span>
+<span class="x">    &lt;div class="post_info"&gt;</span>
+<span class="x">        &lt;div class="fleft"&gt;On &lt;span&gt;12 Nov 2020&lt;/span&gt; / By &lt;a href="#"&gt;John Smith&lt;/a&gt; / Tags &lt;a href="#"&gt;Works&lt;/a&gt;, &lt;a href="#"&gt;Personal&lt;/a&gt;&lt;/div&gt;</span>
+<span class="x">        &lt;div class="fright"&gt;&lt;a href="#"&gt;25&lt;/a&gt; Comments&lt;/div&gt;                                    </span>
+<span class="x">        &lt;div class="clear"&gt;&lt;/div&gt;</span>
+<span class="x">    &lt;/div&gt;</span>
+<span class="x">    &lt;p&gt;[redacted because it is a lot filler text]...&lt;/p&gt;</span>
+<span class="x">    &lt;a href="blog_post.html" class="arrow_link"&gt;Read more&lt;/a&gt;</span>
+<span class="x">&lt;/div&gt;</span>
+<span class="x">... all the reset of the default Mezzanine markup</span>
+</pre></div>
+<p>From there I cut and paste the default code into the appropriate sections of the new markup, deleting any items that don't apply.</p>
+<blockquote>
+<p>Whether or not you want to keep all of the blocks defined in
+blog_post_list.html, like <code>{% block blog_post_list_post_title %}</code> is
+up to you. If you will make use of them, then certainly do,
+but if not they are not necessary.</p>
+</blockquote>
+<p>I want to correctly size the thumbnail for a blog post's featured image, so I inspect one of the downloaded templates images using firebug. Besides that nothing is really tricky, just a lot of copying, pasting, making sure “ifs” are properly closed and paying attention to detail. After hooking everything up the main block of my blog_post_list.html (the only block I've edited) looks like this:</p>
+<div class="codehilite"><pre><span class="cp">{%</span> <span class="k">block</span> <span class="nv">main</span> <span class="cp">%}</span><span class="x"></span>
+<span class="cp">{%</span> <span class="k">if</span> <span class="nv">tag</span> <span class="k">or</span> <span class="nv">category</span> <span class="k">or</span> <span class="nv">year</span> <span class="k">or</span> <span class="nv">month</span> <span class="k">or</span> <span class="nv">author</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">blog_post_list_filterinfo</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    &lt;p&gt;</span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">if</span> <span class="nv">tag</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">        </span><span class="cp">{%</span> <span class="k">trans</span> <span class="s2">"Viewing posts tagged"</span> <span class="cp">%}</span><span class="x"> </span><span class="cp">{{</span> <span class="nv">tag</span> <span class="cp">}}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">else</span> <span class="cp">%}{%</span> <span class="k">if</span> <span class="nv">category</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">        </span><span class="cp">{%</span> <span class="k">trans</span> <span class="s2">"Viewing posts for the category"</span> <span class="cp">%}</span><span class="x"> </span><span class="cp">{{</span> <span class="nv">category</span> <span class="cp">}}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">else</span> <span class="cp">%}{%</span> <span class="k">if</span> <span class="nv">year</span> <span class="k">or</span> <span class="nv">month</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">        </span><span class="cp">{%</span> <span class="k">trans</span> <span class="s2">"Viewing posts from"</span> <span class="cp">%}</span><span class="x"> </span><span class="cp">{%</span> <span class="k">if</span> <span class="nv">month</span> <span class="cp">%}{{</span> <span class="nv">month</span> <span class="cp">}}</span><span class="x">, </span><span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">        </span><span class="cp">{{</span> <span class="nv">year</span> <span class="cp">}}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">else</span> <span class="cp">%}{%</span> <span class="k">if</span> <span class="nv">author</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">        </span><span class="cp">{%</span> <span class="k">trans</span> <span class="s2">"Viewing posts by"</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">        </span><span class="cp">{{</span> <span class="nv">author.get_full_name</span><span class="o">|</span><span class="nf">default</span><span class="o">:</span><span class="nv">author.username</span> <span class="cp">}}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}{%</span> <span class="k">endif</span> <span class="cp">%}{%</span> <span class="k">endif</span> <span class="cp">%}{%</span> <span class="k">endif</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    &lt;/p&gt;</span>
+<span class="cp">{%</span> <span class="k">else</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">if</span> <span class="nv">page</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">blog_post_list_pagecontent</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">editable</span> <span class="nv">page.richtextpage.content</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{{</span> <span class="nv">page.richtextpage.content</span><span class="o">|</span><span class="nf">richtext_filters</span><span class="o">|</span><span class="nf">safe</span> <span class="cp">}}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">endeditable</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span><span class="x"></span>
+<span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span><span class="x"></span>
+
+<span class="cp">{%</span> <span class="k">for</span> <span class="nv">blog_post</span> <span class="k">in</span> <span class="nv">blog_posts.object_list</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">&lt;div class="post"&gt;</span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">blog_post_list_post_title</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">editable</span> <span class="nv">blog_post.title</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    &lt;h2 class="title"&gt;&lt;span&gt;&lt;a href="</span><span class="cp">{{</span> <span class="nv">blog_post.get_absolute_url</span> <span class="cp">}}</span><span class="x">"&gt;</span><span class="cp">{{</span> <span class="nv">blog_post.title</span> <span class="cp">}}</span><span class="x">&lt;/a&gt;&lt;/span&gt;&lt;/h2&gt;</span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">endeditable</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+
+
+<span class="x">    </span><span class="cp">{%</span> <span class="k">if</span> <span class="nv">settings.BLOG_USE_FEATURED_IMAGE</span> <span class="k">and</span> <span class="nv">blog_post.featured_image</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">blog_post_list_post_featured_image</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    &lt;a href="</span><span class="cp">{{</span> <span class="nv">blog_post.get_absolute_url</span> <span class="cp">}}</span><span class="x">"&gt;</span>
+<span class="x">        &lt;img src="</span><span class="cp">{{</span> <span class="nv">MEDIA_URL</span> <span class="cp">}}{%</span> <span class="k">thumbnail</span> <span class="nv">blog_post.featured_image</span> <span class="m">770</span> <span class="m">0</span> <span class="cp">%}</span><span class="x">"&gt;</span>
+<span class="x">    &lt;/a&gt;</span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span><span class="x"></span>
+
+<span class="x">    </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">blog_post_list_post_metainfo</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">editable</span> <span class="nv">blog_post.publish_date</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    &lt;div class="post_info"&gt;</span>
+<span class="x">        &lt;div class="fleft"&gt;</span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">blocktrans</span> <span class="k">with</span> <span class="nv">sometime</span><span class="o">=</span><span class="nv">blog_post.publish_date</span><span class="o">|</span><span class="nf">timesince</span> <span class="cp">%}{{</span> <span class="nv">sometime</span> <span class="cp">}}</span><span class="x"> ago</span><span class="cp">{%</span> <span class="k">endblocktrans</span> <span class="cp">%}</span><span class="x"> /</span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">with</span> <span class="nv">blog_post.user</span> <span class="k">as</span> <span class="nv">author</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            By &lt;a href="</span><span class="cp">{%</span> <span class="k">url</span> <span class="s2">"blog_post_list_author"</span> <span class="nv">author</span> <span class="cp">%}</span><span class="x">"&gt;</span><span class="cp">{{</span> <span class="nv">author.get_full_name</span><span class="o">|</span><span class="nf">default</span><span class="o">:</span><span class="nv">author.username</span> <span class="cp">}}</span><span class="x">&lt;/a&gt;</span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">endwith</span> <span class="cp">%}</span><span class="x"></span>
+
+<span class="x">            </span><span class="cp">{%</span> <span class="k">keywords_for</span> <span class="nv">blog_post</span> <span class="k">as</span> <span class="nv">tags</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">if</span> <span class="nv">tags</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            /</span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">trans</span> <span class="s2">"Tags"</span> <span class="cp">%}</span><span class="x">:</span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">for</span> <span class="nv">tag</span> <span class="k">in</span> <span class="nv">tags</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            &lt;a href="</span><span class="cp">{%</span> <span class="k">url</span> <span class="s2">"blog_post_list_tag"</span> <span class="nv">tag.slug</span> <span class="cp">%}</span><span class="x">" class="tag"&gt;</span><span class="cp">{{</span> <span class="nv">tag</span> <span class="cp">}}</span><span class="x">&lt;/a&gt;</span><span class="cp">{%</span> <span class="k">if</span> <span class="k">not</span> <span class="nb">forloop</span><span class="nv">.last</span> <span class="cp">%}</span><span class="x">, </span><span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span><span class="x"></span>
+
+<span class="x">            </span><span class="cp">{%</span> <span class="k">with</span> <span class="nv">blog_post.categories.all</span> <span class="k">as</span> <span class="nv">categories</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">if</span> <span class="nv">categories</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            /</span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">trans</span> <span class="s2">"Categories"</span> <span class="cp">%}</span><span class="x">:</span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">for</span> <span class="nv">category</span> <span class="k">in</span> <span class="nv">categories</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            &lt;a href="</span><span class="cp">{%</span> <span class="k">url</span> <span class="s2">"blog_post_list_category"</span> <span class="nv">category.slug</span> <span class="cp">%}</span><span class="x">"&gt;</span><span class="cp">{{</span> <span class="nv">category</span> <span class="cp">}}</span><span class="x">&lt;/a&gt;</span><span class="cp">{%</span> <span class="k">if</span> <span class="k">not</span> <span class="nb">forloop</span><span class="nv">.last</span> <span class="cp">%}</span><span class="x">, </span><span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">endwith</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">        &lt;/div&gt;</span>
+<span class="x">        &lt;div class="fright"&gt;</span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">if</span> <span class="nv">settings.COMMENTS_DISQUS_SHORTNAME</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            &lt;a href="</span><span class="cp">{{</span> <span class="nv">blog_post.get_absolute_url</span> <span class="cp">}}</span><span class="x">#disqus_thread"</span>
+<span class="x">                data-disqus-identifier="</span><span class="cp">{%</span> <span class="k">disqus_id_for</span> <span class="nv">blog_post</span> <span class="cp">%}</span><span class="x">"&gt;</span>
+<span class="x">                </span><span class="cp">{%</span> <span class="k">trans</span> <span class="s2">"Comments"</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            &lt;/a&gt;</span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">else</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            &lt;a href="</span><span class="cp">{{</span> <span class="nv">blog_post.get_absolute_url</span> <span class="cp">}}</span><span class="x">#comments"&gt;</span>
+<span class="x">                </span><span class="cp">{%</span> <span class="k">blocktrans</span> <span class="nv">count</span> <span class="nv">comments_count</span><span class="o">=</span><span class="nv">blog_post.comments_count</span> <span class="cp">%}{{</span> <span class="nv">comments_count</span> <span class="cp">}}</span><span class="x"> comment</span><span class="cp">{%</span> <span class="k">plural</span> <span class="cp">%}{{</span> <span class="nv">comments_count</span> <span class="cp">}}</span><span class="x"> comments</span><span class="cp">{%</span> <span class="k">endblocktrans</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            &lt;/a&gt;</span>
+<span class="x">            </span><span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">        &lt;/div&gt;                                    </span>
+<span class="x">        &lt;div class="clear"&gt;&lt;/div&gt;</span>
+<span class="x">    &lt;/div&gt;</span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">endeditable</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+
+
+<span class="x">    </span><span class="cp">{%</span> <span class="k">block</span> <span class="nv">blog_post_list_post_content</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">editable</span> <span class="nv">blog_post.content</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{{</span> <span class="nv">blog_post.description_from_content</span><span class="o">|</span><span class="nf">safe</span> <span class="cp">}}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">endeditable</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">    </span><span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x">    </span>
+<span class="x">    &lt;a href="</span><span class="cp">{{</span> <span class="nv">blog_post.get_absolute_url</span> <span class="cp">}}</span><span class="x">" class="arrow_link"&gt;Read more&lt;/a&gt;</span>
+<span class="x">&lt;/div&gt;</span>
+<span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span><span class="x"></span>
+
+<span class="cp">{%</span> <span class="k">pagination_for</span> <span class="nv">blog_posts</span> <span class="cp">%}</span><span class="x"></span>
+
+<span class="cp">{%</span> <span class="k">if</span> <span class="nv">settings.COMMENTS_DISQUS_SHORTNAME</span> <span class="cp">%}</span><span class="x"></span>
+<span class="cp">{%</span> <span class="k">include</span> <span class="s2">"generic/includes/disqus_counts.html"</span> <span class="cp">%}</span><span class="x"></span>
+<span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span><span class="x"></span>
+<span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span><span class="x"></span>
+</pre></div>
+<h3>filter_panel.html</h3>
+<p>Next I'll move on to the the filter panel; its Django template should be at <code>theme/templates/blog/includes/filter_panel.html</code>. Scrolling down through the downloaded template I see that the markup for the sidebar starts around line 137 with the <code>&lt;div class="span4"&gt;</code>. The whole sidebar is wrapped in another div with a class of sidebar so let's add that to the top of filter_panel.html and close it at the bottom.</p>
+<p>I notice that each section of the templates filter panel is wrapped in a <code>&lt;div class="widget"&gt;</code> and the titles of the section are wrapped in <code>&lt;h2 class="title"&gt;&lt;span&gt;</code>. The default filter panel has no wrappers and section headers are h3s. Using “find” and “replace all” it's easy to update every <code>&lt;h3&gt;</code> to <code>&lt;div class="widget"&gt;&lt;h2 class="title"&gt;&lt;span&gt;</code> and then update every <code>&lt;/h3&gt;</code> to <code>&lt;/span&gt;&lt;/h2&gt;</code>. Notice that I didn't close out the widget div: this is because it wraps all the content of a section, not just a title. You will need to go through and manually close out those divs.</p>
+<p>After that your filter panel will be looking fairly close to the template. There are some additional sections that Mezzanine doesn't have by default (like a text widget), and you can add or remove those as you like. Some of the sections (tags and recent posts for example) have different markup so if you like you can go through and update them to match.</p>
+<h3>blog_post_detail.html</h3>
+<p>The filter panel is done, let's move onto individual blog posts. Open blog_post_detail.html from your theme and blog_post.html from the downloaded template. Find the main content section of the downloaded template and copy the post content like before and paste it into your theme's template. Then update it all to be driven by Mezzanine like you did with the blog list. A lot of the work that you did for the blog post list can be reused because the markup is virtually identical. Mezzanine has a lot of features built into the template including share buttons, ratings, etc…. You can remove those or leave them as you see fit. If you include the ratings it's probably a good idea to copy Mezzanine's <a href="../../../bitbucket.org/stephenmcd/mezzanine/src/902687d2753c449de31d4f615a3bf785ce914e96/mezzanine/core/static/css/mezzanine02b4.html?at=default#cl-92">ratings css</a> into the theme's stylesheet.</p>
+<p>The last part of the blog post detail is the comments section. The template we downloaded does include a design for comments. I'm not going to go into styling comments here but if you do want to give it a shot the Mezzanine templates you would need to modify are generic/includes/comment.html and generic/includes/comments.html. You could also just copy the default Mezzanine css for comments (like I suggested you do above for ratings). The last option for comments, which I have been using lately, is to set up Disqus comments. It's incredibly easy to do with Mezzanine. Login to Disqus, set up the site on Disqus, then go to Site -&gt; Settings in your Mezzanine site's admin and fill in the Disqus shortname setting. There are some other Disqus related setting but they are not needed to get comments working. A potential downside of Disqus is that if Disqus goes down, your comments will not work.</p>
+<p>Your blog is now styled and matches the downloaded template. It's time to move on!</p>
+<h2>...and beyond</h2>
+<p>The downloaded template includes a portfolio page as well as individual portfolio items. We used parts of the portfolio page to style our gallery, but nothing in Mezzanine maps perfectly to the portfolio. First let's open portfolio_4columns.html and single_portfolio.html in our browser (you could work with one of the pages that has a different number of columns) and figure out some requirements.</p>
+<h3>Portfolio</h3>
+<p>This page just shows a bunch of thumbnails with titles and descriptions that are filterable based on categories. All of the content seems to be driven by the portfolio items that it "owns". I will add an optional rich content block. It also appears that the only difference between the different number of column templates is the span size of the individual items so I will add a field to allow selecting how many columns a portfolio should have.</p>
+<h3>Portfolio Item</h3>
+<p>The portfolio items have an image slideshow, two content boxes and a back to portfolio button. Based on the portfolio page we are also going to need to create categories (which we should display) and it would be nice to add an optional view project button that would link externally somewhere.</p>
+<p>To fit the requirements laid out above I come up with these models:</p>
+<div class="codehilite"><pre><span class="c"># these will map to spans</span>
+<span class="n">COLUMNS_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="s">'6'</span><span class="p">,</span> <span class="s">'Two columns'</span><span class="p">),</span> <span class="c"># two columns use span6</span>
+    <span class="p">(</span><span class="s">'4'</span><span class="p">,</span> <span class="s">'Three columns'</span><span class="p">),</span> <span class="c"># three columns use span4</span>
+    <span class="p">(</span><span class="s">'3'</span><span class="p">,</span> <span class="s">'Four Columns'</span><span class="p">),</span> <span class="c"># four columns use span3</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Portfolio</span><span class="p">(</span><span class="n">Page</span><span class="p">):</span>
+    <span class="sd">'''</span>
+<span class="sd">    A collection of individual portfolio items</span>
+<span class="sd">    '''</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="n">RichTextField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">columns</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">COLUMNS_CHOICES</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s">'3'</span><span class="p">)</span>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">"Portfolio"</span><span class="p">)</span>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">"Portfolios"</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">PortfolioItem</span><span class="p">(</span><span class="n">Page</span><span class="p">,</span> <span class="n">RichText</span><span class="p">):</span>
+    <span class="sd">'''</span>
+<span class="sd">    An individual portfolio item, should be nested under a Portfolio</span>
+<span class="sd">    '''</span>
+    <span class="n">featured_image</span> <span class="o">=</span> <span class="n">FileField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">"Featured Image"</span><span class="p">),</span>
+        <span class="n">upload_to</span><span class="o">=</span><span class="n">upload_to</span><span class="p">(</span><span class="s">"theme.PortfolioItem.featured_image"</span><span class="p">,</span> <span class="s">"portfolio"</span><span class="p">),</span>
+        <span class="n">format</span><span class="o">=</span><span class="s">"Image"</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">short_description</span> <span class="o">=</span> <span class="n">RichTextField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">categories</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="s">"PortfolioItemCategory"</span><span class="p">,</span>
+                                        <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">"Categories"</span><span class="p">),</span>
+                                        <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                        <span class="n">related_name</span><span class="o">=</span><span class="s">"portfolioitems"</span><span class="p">)</span>
+    <span class="n">href</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="s">"A link to the finished project (optional)"</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">"Portfolio item"</span><span class="p">)</span>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">"Portfolio items"</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">PortfolioItemImage</span><span class="p">(</span><span class="n">Orderable</span><span class="p">):</span>
+    <span class="sd">'''</span>
+<span class="sd">    An image for a PortfolioItem</span>
+<span class="sd">    '''</span>
+    <span class="n">portfolioitem</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">PortfolioItem</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s">"images"</span><span class="p">)</span>
+    <span class="nb">file</span> <span class="o">=</span> <span class="n">FileField</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">"File"</span><span class="p">),</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">"Image"</span><span class="p">,</span>
+        <span class="n">upload_to</span><span class="o">=</span><span class="n">upload_to</span><span class="p">(</span><span class="s">"theme.PortfolioItemImage.file"</span><span class="p">,</span> <span class="s">"portfolio items"</span><span class="p">))</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">"Image"</span><span class="p">)</span>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">"Images"</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">PortfolioItemCategory</span><span class="p">(</span><span class="n">Slugged</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    A category for grouping portfolio items into a series.</span>
+<span class="sd">    """</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">"Portfolio Item Category"</span><span class="p">)</span>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">"Portfolio Item Categories"</span><span class="p">)</span>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">(</span><span class="s">"title"</span><span class="p">,)</span>
+</pre></div>
+<blockquote>
+<p>Keep in mind that you have already created a stub of the Portfolio
+model when we created the HomePage. Be sure to replace it, we don't
+want to define it twice.</p>
+</blockquote>
+<p>Let's migrate our models:</p>
+<div class="codehilite"><pre><span class="nv">$ </span>python manage.py schemamigration theme --auto
+<span class="nv">$ </span>python manage.py migrate theme
+</pre></div>
+<p>Next we need to update our theme's admin.py to have the new models show in the admin. Import the newly created models and add:</p>
+<div class="codehilite"><pre><span class="k">class</span> <span class="nc">PortfolioItemImageInline</span><span class="p">(</span><span class="n">TabularDynamicInlineAdmin</span><span class="p">):</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">PortfolioItemImage</span>
+
+
+<span class="k">class</span> <span class="nc">PortfolioItemAdmin</span><span class="p">(</span><span class="n">PageAdmin</span><span class="p">):</span>
+    <span class="n">inlines</span> <span class="o">=</span> <span class="p">(</span><span class="n">PortfolioItemImageInline</span><span class="p">,)</span>
+
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">PortfolioItem</span><span class="p">,</span> <span class="n">PortfolioItemAdmin</span><span class="p">)</span>
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">PortfolioItemCategory</span><span class="p">)</span>
+</pre></div>
+<p>We now need to create two new templates, pages/portfolio.html and pages/portfolioitem.html. I'm not going to go into detail about those here, the techniques that you have learned throughout these tutorials should enable you to create these. If you get really stuck and have specific questions please do you use the comments to ask.</p>
+<p>One more freebie, I set up <a href="http://mezzanine.jupo.org/docs/content-architecture.html#page-processors">page processors</a> for the Portfolio and PortfolioItem page types, they look like this:</p>
+<div class="codehilite"><pre><span class="kn">from</span> <span class="nn">mezzanine.pages.page_processors</span> <span class="kn">import</span> <span class="n">processor_for</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">Portfolio</span><span class="p">,</span> <span class="n">PortfolioItem</span><span class="p">,</span> <span class="n">PortfolioItemCategory</span>
+
+
+<span class="nd">@processor_for</span><span class="p">(</span><span class="n">Portfolio</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">portfolio_processor</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">page</span><span class="p">):</span>
+    <span class="sd">'''</span>
+<span class="sd">    Adds a portfolio's portfolio items to the context</span>
+<span class="sd">    '''</span>
+    <span class="c"># get the Portfolio's items, prefetching categories for performance</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="n">PortfolioItem</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">published</span><span class="p">(</span>
+        <span class="n">for_user</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span><span class="s">'categories'</span><span class="p">)</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">parent</span><span class="o">=</span><span class="n">page</span><span class="p">)</span>
+    <span class="c"># filter out only cateogries that are user in the Portfolio's items</span>
+    <span class="n">categories</span> <span class="o">=</span> <span class="n">PortfolioItemCategory</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+        <span class="n">portfolioitems__in</span><span class="o">=</span><span class="n">items</span><span class="p">)</span><span class="o">.</span><span class="n">distinct</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">'items'</span><span class="p">:</span> <span class="n">items</span><span class="p">,</span> <span class="s">'categories'</span><span class="p">:</span> <span class="n">categories</span><span class="p">}</span>
+
+
+<span class="nd">@processor_for</span><span class="p">(</span><span class="n">PortfolioItem</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">portfolioitem_processor</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">page</span><span class="p">):</span>
+    <span class="sd">'''</span>
+<span class="sd">    Adds a portfolio's portfolio items to the context</span>
+<span class="sd">    '''</span>
+    <span class="n">portfolioitem</span> <span class="o">=</span> <span class="n">PortfolioItem</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">published</span><span class="p">(</span>
+        <span class="n">for_user</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span>
+        <span class="s">'categories'</span><span class="p">,</span> <span class="s">'images'</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">page</span><span class="o">.</span><span class="n">portfolioitem</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">'portfolioitem'</span><span class="p">:</span> <span class="n">portfolioitem</span><span class="p">}</span>
+</pre></div>
+<p>The last thing to do for portfolios is go back to your homepage, you remember making that right, and display items from the selected portfolio. You could create a page processor for the HomePage to put the right portfolio items in the context. It might look like this:</p>
+<div class="codehilite"><pre><span class="nd">@processor_for</span><span class="p">(</span><span class="n">HomePage</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">home_processor</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">page</span><span class="p">):</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="n">PortfolioItem</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">published</span><span class="p">(</span>
+        <span class="n">for_user</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span><span class="s">'categories'</span><span class="p">)</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">parent</span><span class="o">=</span><span class="n">page</span><span class="o">.</span><span class="n">homepage</span><span class="o">.</span><span class="n">featured_portfolio</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">'items'</span><span class="p">:</span> <span class="n">items</span><span class="p">}</span>
+</pre></div>
+<p>You could also make a templatetag to do it. In either case we are done with portfolios and finished creating our Mezzanine theme!</p>
+<p>Thanks for reading and I hope these tutorials have been helpful. If you made it all the way through thanks for sticking with it and congratulations! Sorry if my style of writing was inconsistent across the posts, I haven't blogged much till recently and I'm still figuring out what works for me. If you enjoyed the posts, show some love and <a href="https://twitter.com/joshcartme">follow me on Twitter</a>. Sound off in the comments below with your own tips, errors you noticed, questions or anything else you want to say. <a href="https://mezzathe.me/theme/lucid/">Lucid</a> is available on <a href="http://mezzathe.me/">MEZZaTHEME</a> so check it out!</p>
+</div>
+<div class="entry-meta entry-footer">
+<span class="related-tags">
+Related posts:
+<a href="../mezzatheming-part-3-pages-extra-dry/index.html">MEZZaTHEMing Part 3: Pages, extra DRY</a>,
+<a href="../mezzatheming-part-2-the-homepage/index.html">MEZZaTHEMing Part 2: The HomePage</a>,
+<a href="../mezzatheming-creating-mezzanine-themes-part-1-basehtml/index.html">MEZZaTHEMing (creating Mezzanine themes) Part 1: base.html</a>
+<span class="divider">/</span>
+</span>
+<span class="entry-tags">
+Tagged:
+<a href="../tag/django/index.html">django</a>,
+<a href="../tag/mezzanine/index.html">mezzanine</a>,
+<a href="../tag/mezzanine-theme/index.html">mezzanine theme</a>
+</span>
+</div>
+<div class="separator"></div>
+</article>
+
+<script>
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'bitofpixels'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function () {
+    var s = document.createElement('script'); s.async = true;
+    s.type = 'text/javascript';
+    s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+    (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+}());
+</script>
+<div id="comments">
+<h3>Comments</h3>
+<div id="disqus_thread"></div>
+<script>
+var disqus_config = function () {
+    this.page.remote_auth_s3 = '';
+    this.page.api_key = '';
+}
+</script>
+<script>
+    var disqus_developer = 'False' == 'True';
+    var disqus_url = 'index.html';
+    var disqus_title = 'MEZZaTHEMing Part 4: To the blog, and beyond';
+    var disqus_identifier = 'BlogPost-10';
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = '../../../bitofpixels.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+</div>
+</div>
+
+<div class="span3">
+<aside id="sidebar">
+<div id="search" class="widget widget-search">
+<form method="get" id="searchform" action="#">
+<input type="text" placeholder="To search type and hit enter..." value="" />
+</form>
+</div>
+<div class="widget blog-sidebar">
+<h3>Recent Posts</h3>
+<ul class="unstyled recent-posts">
+<li><a href="../upgrading-to-mezzanine-4/index.html">Upgrading to Mezzanine 4</a></li>
+<li><a href="../collecting-additional-information-on-a-per-product-basis-in-cartridge/index.html">Collecting additional information on a per product basis in Cartridge</a></li>
+<li><a href="../deploying-mezzanine-to-digital-ocean-using-the-included-fabfile/index.html">Deploying Mezzanine to Digital Ocean using the included fabfile</a></li>
+<li><a href="../on-singletonadmins-and-sitewidecontent-editing-sitewide-content-in-mezzanines-admin/index.html">On SingletonAdmins and SitewideContent (editing sitewide content in Mezzanine&#39;s admin)</a></li>
+<li><a href="index.html">MEZZaTHEMing Part 4: To the blog, and beyond</a></li>
+</ul>
+<h3>Archive</h3>
+<h6>2015</h6><ul class="unstyled">
+<li><a href="../archive/2015/7/index.html">July</a> (1)</li>
+</ul>
+<h6>2014</h6><ul class="unstyled">
+<li><a href="../archive/2014/5/index.html">May</a> (1)</li>
+<li><a href="../archive/2014/4/index.html">April</a> (1)</li>
+</ul>
+<h6>2013</h6><ul class="unstyled">
+<li><a href="../archive/2013/9/index.html">September</a> (5)</li>
+<li><a href="../archive/2013/8/index.html">August</a> (1)</li>
+<li><a href="../archive/2013/7/index.html">July</a> (2)</li>
+<li><a href="../archive/2013/6/index.html">June</a> (3)</li>
+</ul>
+<h3>Tags</h3>
+<ul class="unstyled tags">
+<li>
+<a href="../tag/mezzanine/index.html" class="tag-weight-4">mezzanine</a>
+(10)
+</li>
+<li>
+<a href="../tag/django/index.html" class="tag-weight-4">django</a>
+(12)
+</li>
+<li>
+<a href="../tag/mezzanine-theme/index.html" class="tag-weight-1">mezzanine theme</a>
+(4)
+</li>
+</ul>
+<h3>Authors</h3>
+<ul class="unstyled">
+<li><a href="../author/josh/index.html">Josh Cartmell</a>
+(14)</li>
+</ul>
+<h3>Feeds</h3>
+<a href="../feeds/rss/index.html">RSS</a> /
+<a href="../feeds/atom/index.html">Atom</a>
+</div>
+<div class="widget widget-social">
+<h3 class="widget-title">Elsewhere</h3>
+<ul>
+<li><a href="https://www.flickr.com/photos/joshcartmell"><i class="font-icon-social-flickr"></i></a></li>
+<li><a href="https://github.com/joshcartme"><i class="font-icon-social-github"></i></a></li>
+<li><a href="https://twitter.com/joshcartme"><i class="font-icon-social-twitter"></i></a></li>
+</ul>
+</div>
+</aside>
+</div>
+
+</div>
+</section>
+</div>
+
+<footer>
+<div class="container">
+<div class="row">
+<nav id="social-footer">
+<ul>
+<li><a href="https://twitter.com/joshcartme" title=""><i class="font-icon-social-twitter"></i></a></li>
+</ul>
+</nav>
+</div>
+</div>
+</footer>
+
+
+<section id="footer-credits">
+<div class="container">
+<div class="row">
+<div class="span12">
+<p class="credits">&copy; 2020 <a target="_blank" href="https://joshc.io/">Josh Cartmell</a>. All rights reserved.</p>
+</div>
+</div>
+</div>
+</section>
+
+
+<a id="back-to-top" href="#">
+<i class="font-icon-arrow-simple-up"></i>
+</a>
+
+<script>
+
+var _gaq = _gaq || [['_trackPageview']];
+_gaq.unshift(['_setAccount', 'UA-31556206-1']);
+(function(d, t) {
+    var g = d.createElement(t),
+        s = d.getElementsByTagName(t)[0];
+    g.async = true;
+    g.src = '../../../www.google-analytics.com/ga.js';
+    s.parentNode.insertBefore(g, s);
+})(document, 'script');
+
+</script>
+</body>
+
+<!-- Mirrored from bitofpixels.com/blog/mezzatheming-part-4-style-the-blog-and-beyond/ by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 05 May 2020 23:52:17 GMT -->
+</html>

@@ -1,0 +1,1948 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><title>Blog | Bit of Pixels</title><link href="http://bitofpixels.com/blog/feeds/atom/" rel="alternate"></link><link href="http://bitofpixels.com/blog/feeds/atom/" rel="self"></link><id>http://bitofpixels.com/blog/feeds/atom/</id><updated>2015-07-18T16:10:31+00:00</updated><subtitle>Blog</subtitle><entry><title>Upgrading to Mezzanine 4</title><link href="http://bitofpixels.com/blog/upgrading-to-mezzanine-4/" rel="alternate"></link><updated>2015-07-18T16:10:31+00:00</updated><author><name>Josh Cartmell</name><uri>/blog/author/josh/</uri></author><id>http://bitofpixels.com/blog/upgrading-to-mezzanine-4/</id><summary type="html">_This post assumes your project is currently using Mezzanine 3.1.10 and up to date with South migrations._
+
+To get started install Mezzanine 4 into a fresh virtualenv and create a Mezzanine 4 project.
+
+    $ virtualenv MEZ4
+    $ source MEZ4/bin/active
+    $ pip install mezzanine
+    $ mezzanine-project mez4proj
+
+We will refer to `mez4proj` throughout the process of upgrading your project to Mezzanine 4.
+
+As I write this blog post I'm updating [Adept](https://secure.mezzathe.me/theme/adept/) to support Mezzanine 4 so I may refer to the project being updated as `adept`.  Right now `adept` has the old project structure and looks like this:
+
+    __init__.py
+    deploy
+        crontab
+        gunicorn.conf.py
+        live_settings.py
+        nginx.conf
+        supervisor.conf
+    dev.db
+    fabfile.py
+    local_settings.py
+    manage.py
+    settings.py
+    static
+    templates
+    theme
+        __init__.py
+        admin.py
+        blog_mods
+            __init__.py
+            admin.py
+            migrations
+                # migration files
+            models.py
+        defaults.py
+        migrations
+            # migration files
+        models.py
+        page_processors.py
+        portfolio
+            __init__.py
+            admin.py
+            migrations
+                # migration files
+            models.py
+            page_processors.py
+            templates
+        static
+            # static files
+        templates
+            # template files
+        templatetags
+            __init__.py
+            adept_tags.py
+    urls.py
+    wsgi.py
+
+
+There is a single top level app, `theme` which contains two sub apps `blog_mods` and `portfolio`.  Let's get started!
+
+## Update your project's layout
+1.  Create a folder in your project with the same name as the project, move everything into it except your `static` directory and database (if using SQLite).  Add an empty file called `__init__.py` to your top level project folder&lt;br&gt;
+
+        $ touch __init__.py
+
+2.  Within the new folder delete `deploy`, `manage.py`, `wsgi.py` and `fabfile.py`
+&gt; If you have made changes to any of the files you are instructed to delete above, **do not delete them**!  Instead move them into the correct place.  I've decided to delete them to upgrade to the latest and greatest from Mezzanine.
+3.  Copy `deploy`, `manage.py`, and `fabfile.py` from `mez4proj` to the top level of your project.  Copy `wsgi.py` from `mez4proj/mez4proj` to the newly created folder.
+4.  Move any apps located in your project up to the top level, in my case I move `theme` from the newly created `adept/adpet` up one directory to reside in the top level `adept` directory.  
+5.  If you are using SQLite also move your database file to the top level. The top level of `adept` now looks like:&lt;br&gt;
+
+        $ ls
+        __init__.py      deploy           fabfile.py       requirements.txt
+        adept            dev.db           manage.py        theme
+
+## Update files
+### manage.py and wsgi.py
+Open the copied `manage.py` and `wsgi.py` and replace any references to `mez4proj` with the correct name of your project.
+
+### settings.py
+At this point things get a bit dicey.  It's likely that you have made many modifications to your `settings.py` file but there have also been changes to the `settings.py` file that comes with Mezzanine.  Personally I want the `settings.py` that ships with `adept` to be as close to the one that comes with Mezzanine as possible.  Here are the steps I use to merge them.
+
+1.  Rename `settings.py` to `settings_old.py`&lt;br&gt;
+
+        mv adept/settings.py adept/settings_old.py
+
+2.  Copy `settings.py` from `mez4proj/mez4proj` to `adept/adept`
+3.  Open the newly copied `settings.py` and `settings_old.py` in a text editor and copy over any needed changes from `settings_old.py` to `settings.py`
+
+In my case the changes I made to the newly copied `settings.py` included:
+
+1.  Copy `ADMIN_MENU_ORDER` from `settings_old.py`
+2.  Copy `PAGE_MENU_TEMPLATES` from `settings_old.py`
+3.  Copy `EXTRA_MODEL_FIELDS` from `settings_old.py`
+4.  uncomment `BLOG_USE_FEATURED_IMAGE = True`
+5.  Update `INSTALLED_APPS` with apps I had in `settings_old.py`
+&gt; Do not copy `USE_SOUTH = True`, we will be updating to Django migrations
+
+### urls.py
+Merge your project's `urls.py` and `urls.py` from `mez4proj`.  You can use a similar process to what we did above with `settings.py` or just eyeball it.  My `urls.py` files tend to be smaller and easier to merge than `settings.py`.
+
+## Migrations
+As of Django 1.7 migrations are a core feature of Django.  South is a thing of the past and since Mezzanine 4 requires Django 1.7+ we will need Django migrations.  [These](https://docs.djangoproject.com/en/1.8/topics/migrations/#upgrading-from-south) are the Django docs on upgrading from South, I will borrow from them heavily.
+
+&gt; The Django docs tell you to delete all your current migrations.  You can do that but I prefer to rename the current migration folders from `migrations` to `south_migrations`.  If you prefer to do exactly as the Django docs say read them, delete all numbered migrations files from your `migrations` folder[s] and skip to step 3
+
+### Create Django Migrations
+
+&gt; If you use `EXTRA_MODEL_FIELDS` make sure to check out the section with that title below before starting these steps
+
+1.  Rename `migrations` to `south_migrations`
+2.  Everywhere you now have a `south_migrations` directory create a new directory called `migrations` and add an empty `__init__.py` file to it.
+3.  At this point it is important that you have `migrations` folders that are empty except for an `__init__.py`, i.e. they look like this:&lt;br&gt;
+
+        migrations
+            __init__.py
+
+4.  Make Django migrations:&lt;br&gt;
+
+        $ python manage.py makemigrations
+
+5.  Fake the migrations since your database is already up to date&lt;br&gt;
+
+        $ python manage.py migrate --fake-initial
+
+### EXTRA_MODEL_FIELDS
+
+Using south, it was [pretty easy](http://dodgyville.tumblr.com/post/23028930440/new-fields-in-mezzanine-without-editing-or) to have arbitrary migrations for one app in another app.  This made making migrations for `EXTRA_MODEL_FIELDS` fairly straightforward.  Django migrations are not flexible in the same way and expect all migrations for an app to be in one place.  The following is how I've gotten `EXTRA_MODEL_FIELDS` to work with Django migrations.  It's ugly, hacky and brittle.  If you know of a better way please let me know in the comments below!
+
+#### Steps
+
+1.  Prior to doing the "Create Django Migrations" steps above comment out `EXTRA_MODEL_FIELDS` in your project's `settings.py`.
+2.  Do the migration steps above except do not complete step 5 yet.
+3.  Uncomment `EXTRA_MODEL_FIELDS`
+4.  Run&lt;br&gt;
+
+        $ python manage.py makemigrations [APPNAME] --dry-run --verbosity 3
+
+    where `[APPNAME]` is the name of the app your `EXTRA_MODEL_FIELDS` modifies. You will need to repeat this for each app `EXTRA_MODEL_FIELDS` modifies
+
+5.  In my case `EXTRA_MODEL_FIELDS` adds a field to BlogPost and I get the following output:&lt;br&gt;
+
+        $ python manage.py makemigrations blog --dry-run --verbosity 3
+
+        Migrations for 'blog':
+          0003_blogpost_featured_video.py:
+            - Add field featured_video to blogpost
+        Full migrations file '0003_blogpost_featured_video.py':
+        # -*- coding: utf-8 -*-
+        from __future__ import unicode_literals
+
+        from django.db import models, migrations
+
+
+        class Migration(migrations.Migration):
+
+            dependencies = [
+                ('blog', '0002_auto_20150527_1555'),
+            ]
+
+            operations = [
+                migrations.AddField(
+                    model_name='blogpost',
+                    name='featured_video',
+                    field=models.TextField(help_text='Optional, an iframe here will override any featured image above', verbose_name='Featured video', blank=True),
+                ),
+            ]
+
+6.  Copy everything starting with `# -*- coding: utf-8 -*-` and paste it into a new file in a `migrations` folder in one of your apps.  In the case of `adept` I create `adept/theme/blog_modes/migrations/0002_blogpost_featured_video.py`
+
+    &gt; Django doesn't actually care about the numbers at the beginning of migrations, those are just to make it easier for humans to tell the order of migrations.
+
+7.  Add the following to the top, just under the imports, of your new migrations file&lt;br&gt;
+
+        class AddExtraField(migrations.AddField):
+
+            def __init__(self, *args, **kwargs):
+                if 'app_label' in kwargs:
+                    self.app_label = kwargs.pop('app_label')
+                else:
+                    self.app_label = None
+                super(AddExtraField, self).__init__(*args, **kwargs)
+
+            def state_forwards(self, app_label, state):
+                super(AddExtraField, self).state_forwards(self.app_label or app_label, state)
+
+            def database_forwards(self, app_label, schema_editor, from_state, to_state):
+                super(AddExtraField, self).database_forwards(
+                    self.app_label or app_label, schema_editor, from_state, to_state)
+
+            def database_backwards(self, app_label, schema_editor, from_state, to_state):
+                super(AddExtraField, self).database_backwards(
+                    self.app_label or app_label, schema_editor, from_state, to_state)
+
+8.  Change instances of `migrations.AddField` to `AddExtraField`.
+9.  To the end of any `AddExtraField` call add a new kwarg, `app_label` and set it equal to the string of the app this migration is modifying.
+
+10. In my case the migration file ends up looking like this:&lt;br&gt;
+
+        # -*- coding: utf-8 -*-
+        from __future__ import unicode_literals
+
+        from django.db import models, migrations
+
+
+        class AddExtraField(migrations.AddField):
+
+            def __init__(self, *args, **kwargs):
+                if 'app_label' in kwargs:
+                    self.app_label = kwargs.pop('app_label')
+                else:
+                    self.app_label = None
+                super(AddExtraField, self).__init__(*args, **kwargs)
+
+            def state_forwards(self, app_label, state):
+                super(AddExtraField, self).state_forwards(self.app_label or app_label, state)
+
+            def database_forwards(self, app_label, schema_editor, from_state, to_state):
+                super(AddExtraField, self).database_forwards(
+                    self.app_label or app_label, schema_editor, from_state, to_state)
+
+            def database_backwards(self, app_label, schema_editor, from_state, to_state):
+                super(AddExtraField, self).database_backwards(
+                    self.app_label or app_label, schema_editor, from_state, to_state)
+
+        class Migration(migrations.Migration):
+
+            dependencies = [
+                ('blog', '0002_auto_20150527_1555'),
+            ]
+
+            operations = [
+                AddExtraField(
+                    model_name='blogpost',
+                    name='featured_video',
+                    field=models.TextField(help_text='Optional, an iframe here will override any featured image above', verbose_name='Featured video', blank=True),
+                    app_label="blog"
+                ),
+            ]
+
+    All it does is add a `featured_video` field to blog posts.
+
+11. Fake all migration:&lt;br&gt;
+        
+        $ python manage.py migrate --fake-initial
+
+## Closing
+Run your project, it should work!  At this point you can delete `settings_old.py` from your project.  You may want to keep a copy around somewhere to refer to just in case.
+
+The layout of the upgraded `adept` now looks like this:
+
+    __init__.py
+    adept
+        __init__.py
+        local_settings.py
+        settings.py
+        urls.py
+        wsgi.py
+    deploy
+        crontab
+        gunicorn.conf.py
+        live_settings.py
+        nginx.conf
+        supervisor.conf
+    dev.db
+    fabfile.py
+    manage.py
+    static
+    theme
+        __init__.py
+        admin.py
+        blog_mods
+            __init__.py
+            admin.py
+            migrations
+                # migration files
+            models.py
+        defaults.py
+        migrations
+            # migration files
+        models.py
+        page_processors.py
+        portfolio
+            __init__.py
+            admin.py
+            migrations
+                # migration files
+            models.py
+            page_processors.py
+            templates
+        static
+            # static files
+        templates
+            # template files
+        templatetags
+            __init__.py
+            adept_tags.py
+
+
+## Gotchas
+* Certain types of monkey patches can no longer be in models.py so if you run into errors complaining of models not being loaded, that may be it.</summary></entry><entry><title>Collecting additional information on a per product basis in Cartridge</title><link href="http://bitofpixels.com/blog/collecting-additional-information-on-a-per-product-basis-in-cartridge/" rel="alternate"></link><updated>2014-05-23T19:10:53+00:00</updated><author><name>Josh Cartmell</name><uri>/blog/author/josh/</uri></author><id>http://bitofpixels.com/blog/collecting-additional-information-on-a-per-product-basis-in-cartridge/</id><summary type="html">I recently was working on a project in which I was making use of Cartridge and
+needed to collect extra info when users added particular products to their order.
+I wanted this to be toggleable via the backend so that certain products would
+require extra information and others wouldn't.
+
+My particular case was collecting a student ID, but these techniques should be
+applicable to many use cases.  After some thought I figured out that there were
+two main areas of Cartridge functionality that I would need to modify.  They
+were:
+
+1. Adding items to the cart
+2. Copying cart items to an order
+
+I don't think that modifying an external librarie's (in this case Cartridge)
+source code is a good idea so I didn't.  To start out I added fields
+using Mezzanine's EXTRA_MODEL_FIELDS.
+
+## Adding extra fields
+
+Inside the project's settings.py I added:
+
+    ::python
+    EXTRA_MODEL_FIELDS = (
+        (
+            "cartridge.shop.models.Product.require_student_id",
+            "BooleanField",
+            ("Require student ID",),
+            {"help_text": 'Check if a student id should be collected when this product is purchased',
+             "default": False},
+        ),
+        (
+            "cartridge.shop.models.CartItem.student_id",
+            "CharField",
+            ("Student ID",),
+            {"blank": True, "max_length": 50},
+        ),
+        (
+            "cartridge.shop.models.OrderItem.student_id",
+            "CharField",
+            ("Student ID",),
+            {"blank": True, "max_length": 50},
+        ),
+    )
+
+Next I created migrations:
+
+    python manage.py schemamigration shop --auto --stdout &gt; shop_extras/migrations/0001_student_id_collect.py
+
+Then I ran the migrations:
+
+    python manage.py migrate shop_extras
+
+&gt; The above assumes that shop_extras is a django app that is in the project's `INSTALLED_APPS` setting.  You will need to manually create the directory migrations and add a blank `__init__.py` file inside of it.
+
+Next to expose the newly created `require_student_id` field I monkey patched the shop admin.  Inside shop_extras/admin.py I put:
+
+    ::python
+    from cartridge.shop.admin import ProductAdmin
+
+    ProductAdmin.fieldsets[0][1]["fields"].extend(["require_student_id"])
+
+Now the Product admin has a checkbox that can be used to toggle whether or not a particular product requires a student ID.  From there I began to work on collecting the student ID when the product was added to the cart.
+
+## Cart modifications
+&gt;I put all of the monkey patches discussed in the following sections in shop_extras/models.py.  They can go anywhere that is imported at the time the site starts.
+
+### Collecting extra fields
+
+First I monkey patched an additional field onto the `AddProductForm`:
+
+    ::python
+    from copy import deepcopy
+
+    from cartridge.shop.forms import AddProductForm
+
+    ...
+    
+    original_product_add_init = deepcopy(AddProductForm.__init__) 
+    def product_add_init(self, *args, **kwargs):
+        """
+        Add student ID to add to cart form
+        """
+        original_product_add_init(self, *args, **kwargs)
+        if self._product and self._product.require_student_id:
+            self.fields['student_id'] = forms.CharField()
+    AddProductForm.__init__ = product_add_init
+
+The above makes it so that if a Product requires a student ID an additional field to collect it is added to the `AddProductForm`.  Collecting extra fields is great, but useless if they aren't stored somewhere. 
+
+### Storing extra fields
+
+Storing the extra fields was a bit more tricky.  First I decided to keep a transient copy of the student ID in the variation that is attached to the `AddProductForm` in its clean method.  I copied the original clean method from `AddProductForm` and added to it ending up with:
+
+    ::python
+    def product_add_clean(self):
+        """
+        Determine the chosen variation, validate it and assign it as
+        an attribute to be used in views.
+
+        Store the student ID if it exists
+        """
+        if not self.is_valid():
+            return
+        # Posted data will either be a sku, or product options for
+        # a variation.
+        data = self.cleaned_data.copy()
+        quantity = data.pop("quantity")
+        student_id = None
+        if self._product and self._product.require_student_id:
+            student_id = data.pop("student_id")
+        # Ensure the product has a price if adding to cart.
+        if self._to_cart:
+            data["unit_price__isnull"] = False
+        error = None
+        if self._product is not None:
+            # Chosen options will be passed to the product's
+            # variations.
+            qs = self._product.variations
+        else:
+            # A product hasn't been given since we have a direct sku.
+            qs = ProductVariation.objects
+        try:
+            variation = qs.get(**data)
+        except ProductVariation.DoesNotExist:
+            error = "invalid_options"
+        else:
+            # Validate stock if adding to cart.
+            if self._to_cart:
+                if not variation.has_stock():
+                    error = "no_stock"
+                elif not variation.has_stock(quantity):
+                    error = "no_stock_quantity"
+        if error is not None:
+            raise forms.ValidationError(ADD_PRODUCT_ERRORS[error])
+        self.variation = variation
+        if student_id:
+            self.variation._student_id = student_id
+        return self.cleaned_data
+    AddProductForm.clean = product_add_clean
+
+
+The parts I added were:
+
+    ::python
+    student_id = None
+    if self._product and self._product.require_student_id:
+        student_id = data.pop("student_id")
+
+and near the end:
+
+    ::python
+    if student_id:
+        self.variation._student_id = student_id
+
+I had to copy the entire clean method (rather than a cleaner monkey patch like I did on the `__init__`) because I needed to pop `student_id` out of `data` which was created inside the clean method to avoid validation errors.
+
+At this point I had a transient copy of the student ID stored in the variation.  Ultimately I needed the student ID to be stored in the database with on the `CartItem` model (remember we added that field using `EXTRA_MODEL_FIELDS`).  To accomplish this I monkey patch the `Cart.add_item` method:
+
+    ::python
+    def add_item_mod(self, variation, quantity):
+        """
+        Increase quantity of existing item if SKU matches, otherwise create
+        new.
+        """
+        kwargs = {"sku": variation.sku, "unit_price": variation.price()}
+        item, created = self.items.get_or_create(**kwargs)
+        if created:
+            item.description = force_text(variation)
+            item.unit_price = variation.price()
+            item.url = variation.product.get_absolute_url()
+            try:
+                item.student_id = variation._student_id
+            except AttributeError:
+                pass
+            image = variation.image
+            if image is not None:
+                item.image = force_text(image.file)
+            variation.product.actions.added_to_cart()
+        item.quantity += quantity
+        item.save()
+    Cart.add_item = add_item_mod
+
+In this case I needed to do things inside the `if created` block so I couldn't do as clean of a patch.  As you can see I try to add the student ID to the `CartItem` catching any `AttributeError` which would mean that product didn't require a student ID.
+
+At this point I've collected and stored the student ID in the user's cart.  The last piece of this puzzle is storing the student ID on the `OrderItem` when an order is made.
+
+## Storing custom fields on OrderItem
+
+When I first looked at `Order.setup` I thought that the student ID field (which was added to both `CartItem` and `OrderItem`) would automatically be copied over.  This didn't end up being the case, only fields that both models inherited from `SelectedProduct` were copied over.  To get the field to copy I monkey patched `Order.setup`:
+
+    ::python
+    def setup(self, request):
+        """
+        Set order fields that are stored in the session, item_total
+        and total based on the given cart, and copy the cart items
+        to the order. Called in the final step of the checkout process
+        prior to the payment handler being called.
+
+        Also copies student IDs
+        """
+        self.key = request.session.session_key
+        self.user_id = request.user.id
+        for field in self.session_fields:
+            if field in request.session:
+                setattr(self, field, request.session[field])
+        self.total = self.item_total = request.cart.total_price()
+        if self.shipping_total is not None:
+            self.shipping_total = Decimal(str(self.shipping_total))
+            self.total += self.shipping_total
+        if self.discount_total is not None:
+            self.total -= Decimal(self.discount_total)
+        if self.tax_total is not None:
+            self.total += Decimal(self.tax_total)
+        self.save()  # We need an ID before we can add related items.
+        for item in request.cart:
+            product_fields = [f.name for f in SelectedProduct._meta.fields] + ['student_id']
+            item = dict([(f, getattr(item, f)) for f in product_fields])
+            self.items.create(**item)
+    Order.setup = setup
+
+The only part I added was:
+
+    ::python 
+    + ['student_id']
+
+to:
+
+    ::python
+    product_fields = [f.name for f in SelectedProduct._meta.fields]
+
+in the forloop near the end.
+
+## End
+
+That's it.  At this point when adding products that have `require_student_id` checked
+a student ID is collected.  If the order is completed that student ID is 
+saved on the `OrderItem` and visible in the line items at the bottom of the
+Order admin.
+
+If you have questions/comments or see a typo or something else I did wrong use the comments below!
+</summary></entry><entry><title>Deploying Mezzanine to Digital Ocean using the included fabfile</title><link href="http://bitofpixels.com/blog/deploying-mezzanine-to-digital-ocean-using-the-included-fabfile/" rel="alternate"></link><updated>2014-04-01T17:33:02+00:00</updated><author><name>Josh Cartmell</name><uri>/blog/author/josh/</uri></author><id>http://bitofpixels.com/blog/deploying-mezzanine-to-digital-ocean-using-the-included-fabfile/</id><summary type="html">## The process
+1. Sign up for [Digital Ocean](https://www.digitalocean.com/?refcode=8b6cb2deb3cc) (that's a referral link which you are in no way obligated to use)
+2. Create a droplet (I've added my SSH key to Digital Ocean so I assign that to the droplet).
+   I used Debian 7 x64
+3. Point your domain's A record at the IP address Digital Ocean assigns to your droplet.
+4. Log into the vps as root, create a new user and give it sudo permission, `$ adduser new_user_name` then `$ visudo`
+5. In visudo find the line `root    ALL=(ALL:ALL) ALL` replicate it just below and replace root with the username created above.
+7. In your local project copy the default fabric dictionary from settings.py to local_settings.py and uncomment it
+8. Fill in the fabric settings
+9. Configure ALLOWED_HOSTS in deploy/live_settings.py, i.e., `ALLOWED_HOSTS = ['example.com']`
+10. Open your project's requirements.txt and add pillow to a new line (This should get automatically installed by Mezzanine but for some reason isn't)
+11. Run fabric `$ fab all`
+12. Go to your site in your browser
+## Notes
+### Log locations
+Logs end up in `/var/log/` particularly:
+
+* nginx: `/var/log/nginx`
+* supervisor: `/var/log/supervisor`
+
+The supervisor directory contains logs of gunicorn's stderr and stdout which would include Django errors.
+
+### Example project
+
+The project I deployed is [here]( https://bitbucket.org/joshcartme/vanilla_mezz/src/89e8ec26735fa6dade72af9a2cc936052d08fd3f/deploy/live_settings.py?at=default), it's just vanilla Mezzanine with ALLOWED_HOSTS set and pillow added to the requirements
+
+### Example fabric dictionary
+
+    FABRIC = {
+        "SSH_USER": "do", # SSH username
+        "SSH_PASS":  "", # SSH password (consider key-based authentication)
+        "SSH_KEY_PATH":  "/Users/josh/.ssh/id_rsa.pub", # Local path to SSH key file, for key-based auth
+        "HOSTS": ['do.bitpl.us'], # List of hosts to deploy to
+        "VIRTUALENV_HOME":  "/home/do", # Absolute remote path for virtualenvs
+        "PROJECT_NAME": "do_test", # Unique identifier for project
+        "REQUIREMENTS_PATH": "requirements.txt", # Path to pip requirements, relative to project
+        "GUNICORN_PORT": 8000, # Port gunicorn will listen on
+        "LOCALE": "en_US.UTF-8", # Should end with ".UTF-8"
+        "LIVE_HOSTNAME": "do.bitpl.us", # Host for public site.
+        "REPO_URL": "https://joshcartme@bitbucket.org/joshcartme/vanilla_mezz", # Git or Mercurial remote repo URL for the project
+        "DB_PASS": "abc123", # Live database password
+        "ADMIN_PASS": "abc123", # Live admin user password
+        "SECRET_KEY": SECRET_KEY,
+        "NEVERCACHE_KEY": NEVERCACHE_KEY,
+    }</summary></entry><entry><title>On SingletonAdmins and SitewideContent (editing sitewide content in Mezzanine&amp;#39;s admin)</title><link href="http://bitofpixels.com/blog/on-singletonadmins-and-sitewidecontent-editing-sitewide-content-in-mezzanines-admin/" rel="alternate"></link><updated>2013-09-26T21:20:35+00:00</updated><author><name>Josh Cartmell</name><uri>/blog/author/josh/</uri></author><id>http://bitofpixels.com/blog/on-singletonadmins-and-sitewidecontent-editing-sitewide-content-in-mezzanines-admin/</id><summary type="html">## The problem
+
+Recently while working on developing a Mezzanine powered site I was asked to make it possible to edit the footer in the Mezzanine admin.  In this case the footer contained a block of text that was contact info and two blocks that were links, some within the site, some external.  In the past I've created a `ContentBlock` model that is just a title and `RichTextField`.  I then have created an accompanying templatetag that looks content blocks up by title and displays the associated content field.  That approach works but it's brittle because if someone changes the title of a content block it will no longer be displayed.  It also results in extra overhead because displaying three sections would require three database calls.  This time around I thought about the problem some more, and came up with a superior solution which makes use of Mezzanine's `SingletonAdmin` class.
+
+For the purpose of this article assume that you are in a similar situation and have a footer that contains three content blocks which you would like editable via the admin. The techniques described could easily be extended to accommodate whatever site-wide content you would like to be editable in Mezzanine's admin.
+
+## The models
+
+    ::python
+    class SitewideContent(SiteRelated):
+        box_one_title = models.CharField(max_length=200, default="Contact us")
+        box_one_content = RichTextField()
+        box_two_title = models.CharField(max_length=200, default="Sites we like")
+        box_two_content = RichTextField()
+        box_three_title = models.CharField(max_length=200, default="Highlighted pages")
+        box_three_content = RichTextField()
+
+        class Meta:
+            verbose_name = _('Sitewide Content')
+            verbose_name_plural = _('Sitewide Content')
+
+&gt; You may find it odd that I include a title field associated with each
+&gt; content field.  While admin's could easily add a heading at the
+&gt; beginning of each content field I find it useful to force the title,
+&gt; constraining admin users slightly and enforcing consistency.  In any
+&gt; case it's a subjective choice and you can do whatever suits your
+&gt; situation.
+
+## The admin
+
+Next I get the SitewideContent model to show in the admin.  There should only be one instance of SitewideContent on a site so I make use of Mezzanine's `SingletonAdmin`.  Mezzanine's `SingletonAdmin` makes it so that you are never shown the add object screen for a model and are instead redirected to the add form or if an object already exists, redirected to it's change form.  This means that there will only ever be a single instance of the model in the databse.  The admin.py looks like this:
+
+    ::python
+    from django.contrib import admin
+
+    from mezzanine.core.admin import SingletonAdmin
+
+    from models import SitewideContent
+
+    
+    admin.site.register(SitewideContent, SingletonAdmin)
+
+I also modify `ADMIN_MENU_ORDER` in settings.py to get `SitewideContent` to show in the Content dropdown in the admin, it looks like this (you will need to replace some_app_name with the name of the app that has the SitewideContent model):
+
+    ::python
+    ADMIN_MENU_ORDER = (
+        ("Content", ("pages.Page", "blog.BlogPost", "some_app_name.SitewideContent",
+           "generic.ThreadedComment", ("Media Library", "fb_browse"),)),
+        ("Site", ("sites.Site", "redirects.Redirect", "conf.Setting")),
+        ("Users", ("auth.User", "auth.Group",)),
+    )
+
+## Display
+
+The final piece of this puzzle is getting this content to show in the footer (or wherever).  There are various approaches that could be used (middleware maybe, a context processor, etc...); I ended up creating a tempalettag like so:
+
+    ::python
+
+    from mezzanine import template
+    from mezzanine.utils.sites import current_site_id
+    
+    from some_app_name.models import SitewideContent
+
+    register = template.Library()
+
+
+    @register.as_tag
+    def get_sitewide_content():
+        """
+        Adds the `SitewideContent` to the context
+        """
+        return SitewideContent.objects.get_or_create(site_id=current_site_id())[0]
+
+and then finally in base.html I use the templatetag:
+
+    ::django
+    {% get_sitewide_content as sitewide %}
+    {% if sitewide %}
+    &lt;footer id="footer"&gt;
+        &lt;div class="container"&gt;
+            &lt;div class="row-fluid"&gt;
+                &lt;div class="span4"&gt;
+                    {% editable sitewide.box_one_title sitewide.box_one_content %}
+                    &lt;h4&gt;{{ sitewide.box_one_title }}&lt;/h4&gt;
+                    {{ sitewide.box_one_content|richtext_filters|safe }}
+                    {% endeditable %}
+                &lt;/div&gt;
+
+                &lt;div class="span4"&gt;
+                    {% editable sitewide.box_two_title sitewide.box_two_content %}
+                    &lt;h4&gt;{{ sitewide.box_two_title }}&lt;/h4&gt;
+                    {{ sitewide.box_two_content|richtext_filters|safe }}
+                    {% endeditable %}
+                &lt;/div&gt;
+
+                &lt;div class="span4"&gt;
+                    {% editable sitewide.box_three_title sitewide.box_three_content %}
+                    &lt;h4&gt;{{ sitewide.box_three_title }}&lt;/h4&gt;
+                    {{ sitewide.box_three_content|richtext_filters|safe }}
+                    {% endeditable %}
+                &lt;/div&gt;
+            &lt;/div&gt;&lt;!-- row-fluid --&gt;
+        &lt;/div&gt;
+    &lt;/footer&gt;
+    {% endif %}
+
+After following these steps there will be a new Sitewide Content link under the Content dropdown in the Mezzanine admin.  Clicking it will allow you to edit the footer (or whatever you have set up) that shows up across your entire site.
+
+See anything I did wrong, or want to let me know of any idea of your own, use the comments below!</summary></entry><entry><title>MEZZaTHEMing Part 4: To the blog, and beyond</title><link href="http://bitofpixels.com/blog/mezzatheming-part-4-style-the-blog-and-beyond/" rel="alternate"></link><updated>2013-09-19T17:43:24+00:00</updated><author><name>Josh Cartmell</name><uri>/blog/author/josh/</uri></author><id>http://bitofpixels.com/blog/mezzatheming-part-4-style-the-blog-and-beyond/</id><summary type="html">This is the fourth and final part of my tutorial series on creating Mezzanine themes.  Throughout the tutorial I have been going over the process of taking static html and using it to develop a Mezzanine theme. I've been working with the html template that is available [here](http://www.templatescreme.com/free-website-jessica-white-free-bootstrap-website), but the methods I discuss could be used to develop a Mezzanine theme based on a PSD to html conversion, or any other number of potential sources of styled html. [The first post](/blog/mezzatheming-creating-mezzanine-themes-part-1-basehtml/) went over the process of creating base.html which is the foundation of the rest of a Mezzanine theme. [Part two](/blog/mezzatheming-part-2-the-homepage/) taught you to take that foundation and create a backend editable page to be your site's home page. [The third post](/blog/mezzatheming-part-3-pages-extra-dry/) described how to make templates DRY and applied those principals to styling Mezzanine's default pages, including a custom design for the gallery. This post will focus on styling the blog and creating more custom content types, adding Portfolio capabilities to our theme.
+
+I don't think I have any philosophizing, contemplating or other rubbish today, let's jump right to it.
+
+## The blog
+First up, copy the blog templates into your theme app:
+
+    ::bash
+    $ python manage.py collecttemplates mezzanine.blog
+    $ mv templates/blog/ theme/templates/
+
+&gt; I generally don't use collecttemplates to copy all of an apps
+&gt; templates because it usually ends up copying a lot of
+&gt; templates that I don't want. In the case of the blog I know
+&gt; from experience that it is only going to copy three templates and that
+&gt; I almost certainly will be editing all three of them.
+
+This is a good time to add some sample blog posts to your dev site (if you haven't set `BLOG_USE_FEATURED_IMAGE` to True in your settings.py do that now).
+
+&gt;[This site](http://www.lipsum.com/) is a great resource for generating filler text.
+
+### blog_post_list.html
+
+With some test blog posts up, head over to the blog section of your development site. It doesn't look bad, but it doesn't look like the template we are working with. Open the downloaded theme's blog.html in both a browser and a text editor and open the newly copied blog_post_list.html in an editor.
+
+Scroll down in the downloaded template to about line 80 where you see `&lt;!--page_container--&gt;`. As you know if you've read my other posts, this is the main content area and the way we have designed our base.html the blog will easily fit in. There are no extra css classes or markup (except the wrapping `&lt;section&gt;` which I will remove since it seems to serve no practical purpose) so we can work directly with our `main` and `right_panel` blocks. After reviewing the downloaded template I see that each post is a `&lt;div class="post"&gt;` directly inside the `span8` (our main block). I copy one of the post divs and paste it into blog_post_list.html, directly after `{% for blog_post in blog_posts.object_list %}` inside `{% block main %}`. I now have:
+
+    ::django
+    {% for blog_post in blog_posts.object_list %}
+    &lt;div class="post"&gt;
+        &lt;h2 class="title"&gt;&lt;span&gt;&lt;a href="blog_post.html"&gt;Lorem Ipsum is simply dummy text&lt;/a&gt;&lt;/span&gt;&lt;/h2&gt;
+        &lt;img src="img/blog/1.jpg" alt="" /&gt;
+        &lt;div class="post_info"&gt;
+            &lt;div class="fleft"&gt;On &lt;span&gt;12 Nov 2020&lt;/span&gt; / By &lt;a href="#"&gt;John Smith&lt;/a&gt; / Tags &lt;a href="#"&gt;Works&lt;/a&gt;, &lt;a href="#"&gt;Personal&lt;/a&gt;&lt;/div&gt;
+            &lt;div class="fright"&gt;&lt;a href="#"&gt;25&lt;/a&gt; Comments&lt;/div&gt;                                    
+            &lt;div class="clear"&gt;&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;p&gt;[redacted because it is a lot filler text]...&lt;/p&gt;
+        &lt;a href="blog_post.html" class="arrow_link"&gt;Read more&lt;/a&gt;
+    &lt;/div&gt;
+    ... all the reset of the default Mezzanine markup
+
+From there I cut and paste the default code into the appropriate sections of the new markup, deleting any items that don't apply.
+
+&gt; Whether or not you want to keep all of the blocks defined in
+&gt; blog_post_list.html, like `{% block blog_post_list_post_title %}` is
+&gt; up to you.  If you will make use of them, then certainly do,
+&gt; but if not they are not necessary.
+
+I want to correctly size the thumbnail for a blog post's featured image, so I inspect one of the downloaded templates images using firebug. Besides that nothing is really tricky, just a lot of copying, pasting, making sure “ifs” are properly closed and paying attention to detail.  After hooking everything up the main block of my blog_post_list.html (the only block I've edited) looks like this:
+
+    ::django
+    {% block main %}
+    {% if tag or category or year or month or author %}
+        {% block blog_post_list_filterinfo %}
+        &lt;p&gt;
+        {% if tag %}
+            {% trans "Viewing posts tagged" %} {{ tag }}
+        {% else %}{% if category %}
+            {% trans "Viewing posts for the category" %} {{ category }}
+        {% else %}{% if year or month %}
+            {% trans "Viewing posts from" %} {% if month %}{{ month }}, {% endif %}
+            {{ year }}
+        {% else %}{% if author %}
+            {% trans "Viewing posts by" %}
+            {{ author.get_full_name|default:author.username }}
+        {% endif %}{% endif %}{% endif %}{% endif %}
+        {% endblock %}
+        &lt;/p&gt;
+    {% else %}
+        {% if page %}
+        {% block blog_post_list_pagecontent %}
+        {% editable page.richtextpage.content %}
+        {{ page.richtextpage.content|richtext_filters|safe }}
+        {% endeditable %}
+        {% endblock %}
+        {% endif %}
+    {% endif %}
+
+    {% for blog_post in blog_posts.object_list %}
+    &lt;div class="post"&gt;
+        {% block blog_post_list_post_title %}
+        {% editable blog_post.title %}
+        &lt;h2 class="title"&gt;&lt;span&gt;&lt;a href="{{ blog_post.get_absolute_url }}"&gt;{{ blog_post.title }}&lt;/a&gt;&lt;/span&gt;&lt;/h2&gt;
+        {% endeditable %}
+        {% endblock %}
+
+
+        {% if settings.BLOG_USE_FEATURED_IMAGE and blog_post.featured_image %}
+        {% block blog_post_list_post_featured_image %}
+        &lt;a href="{{ blog_post.get_absolute_url }}"&gt;
+            &lt;img src="{{ MEDIA_URL }}{% thumbnail blog_post.featured_image 770 0 %}"&gt;
+        &lt;/a&gt;
+        {% endblock %}
+        {% endif %}
+
+        {% block blog_post_list_post_metainfo %}
+        {% editable blog_post.publish_date %}
+        &lt;div class="post_info"&gt;
+            &lt;div class="fleft"&gt;
+                {% blocktrans with sometime=blog_post.publish_date|timesince %}{{ sometime }} ago{% endblocktrans %} /
+                {% with blog_post.user as author %}
+                By &lt;a href="{% url "blog_post_list_author" author %}"&gt;{{ author.get_full_name|default:author.username }}&lt;/a&gt;
+                {% endwith %}
+
+                {% keywords_for blog_post as tags %}
+                {% if tags %}
+                /
+                {% trans "Tags" %}:
+                {% for tag in tags %}
+                &lt;a href="{% url "blog_post_list_tag" tag.slug %}" class="tag"&gt;{{ tag }}&lt;/a&gt;{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+                {% endif %}
+
+                {% with blog_post.categories.all as categories %}
+                {% if categories %}
+                /
+                {% trans "Categories" %}:
+                {% for category in categories %}
+                &lt;a href="{% url "blog_post_list_category" category.slug %}"&gt;{{ category }}&lt;/a&gt;{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+            &lt;/div&gt;
+            &lt;div class="fright"&gt;
+                {% if settings.COMMENTS_DISQUS_SHORTNAME %}
+                &lt;a href="{{ blog_post.get_absolute_url }}#disqus_thread"
+                    data-disqus-identifier="{% disqus_id_for blog_post %}"&gt;
+                    {% trans "Comments" %}
+                &lt;/a&gt;
+                {% else %}
+                &lt;a href="{{ blog_post.get_absolute_url }}#comments"&gt;
+                    {% blocktrans count comments_count=blog_post.comments_count %}{{ comments_count }} comment{% plural %}{{ comments_count }} comments{% endblocktrans %}
+                &lt;/a&gt;
+                {% endif %}
+            &lt;/div&gt;                                    
+            &lt;div class="clear"&gt;&lt;/div&gt;
+        &lt;/div&gt;
+        {% endeditable %}
+        {% endblock %}
+
+
+        {% block blog_post_list_post_content %}
+        {% editable blog_post.content %}
+        {{ blog_post.description_from_content|safe }}
+        {% endeditable %}
+        {% endblock %}    
+        &lt;a href="{{ blog_post.get_absolute_url }}" class="arrow_link"&gt;Read more&lt;/a&gt;
+    &lt;/div&gt;
+    {% endfor %}
+
+    {% pagination_for blog_posts %}
+
+    {% if settings.COMMENTS_DISQUS_SHORTNAME %}
+    {% include "generic/includes/disqus_counts.html" %}
+    {% endif %}
+    {% endblock %}
+
+### filter_panel.html
+
+Next I'll move on to the the filter panel; its Django template should be at `theme/templates/blog/includes/filter_panel.html`. Scrolling down through the downloaded template I see that the markup for the sidebar starts around line 137 with the `&lt;div class="span4"&gt;`. The whole sidebar is wrapped in another div with a class of sidebar so let's add that to the top of filter_panel.html and close it at the bottom.
+
+I notice that each section of the templates filter panel is wrapped in a `&lt;div class="widget"&gt;` and the titles of the section are wrapped in `&lt;h2 class="title"&gt;&lt;span&gt;`. The default filter panel has no wrappers and section headers are h3s. Using “find” and “replace all” it's easy to update every `&lt;h3&gt;` to `&lt;div class="widget"&gt;&lt;h2 class="title"&gt;&lt;span&gt;` and then update every `&lt;/h3&gt;` to `&lt;/span&gt;&lt;/h2&gt;`.  Notice that I didn't close out the widget div: this is because it wraps all the content of a section, not just a title. You will need to go through and manually close out those divs.
+
+After that your filter panel will be looking fairly close to the template. There are some additional sections that Mezzanine doesn't have by default (like a text widget), and you can add or remove those as you like. Some of the sections (tags and recent posts for example) have different markup so if you like you can go through and update them to match.
+
+### blog_post_detail.html
+
+The filter panel is done, let's move onto individual blog posts. Open blog_post_detail.html from your theme and blog_post.html from the downloaded template. Find the main content section of the downloaded template and copy the post content like before and paste it into your theme's template. Then update it all to be driven by Mezzanine like you did with the blog list. A lot of the work that you did for the blog post list can be reused because the markup is virtually identical. Mezzanine has a lot of features built into the template including share buttons, ratings, etc…. You can remove those or leave them as you see fit. If you include the ratings it's probably a good idea to copy Mezzanine's [ratings css](https://bitbucket.org/stephenmcd/mezzanine/src/902687d2753c449de31d4f615a3bf785ce914e96/mezzanine/core/static/css/mezzanine.css?at=default#cl-92) into the theme's stylesheet.
+
+The last part of the blog post detail is the comments section. The template we downloaded does include a design for comments. I'm not going to go into styling comments here but if you do want to give it a shot the Mezzanine templates you would need to modify are generic/includes/comment.html and generic/includes/comments.html. You could also just copy the default Mezzanine css for comments (like I suggested you do above for ratings). The last option for comments, which I have been using lately, is to set up Disqus comments. It's incredibly easy to do with Mezzanine. Login to Disqus, set up the site on Disqus, then go to Site -&gt; Settings in your Mezzanine site's admin and fill in the Disqus shortname setting. There are some other Disqus related setting but they are not needed to get comments working. A potential downside of Disqus is that if Disqus goes down, your comments will not work.
+
+Your blog is now styled and matches the downloaded template. It's time to move on!
+
+## ...and beyond
+
+The downloaded template includes a portfolio page as well as individual portfolio items. We used parts of the portfolio page to style our gallery, but nothing in Mezzanine maps perfectly to the portfolio. First let's open portfolio_4columns.html and single_portfolio.html in our browser (you could work with one of the pages that has a different number of columns) and figure out some requirements.
+
+### Portfolio
+
+This page just shows a bunch of thumbnails with titles and descriptions that are filterable based on categories. All of the content seems to be driven by the portfolio items that it "owns". I will add an optional rich content block. It also appears that the only difference between the different number of column templates is the span size of the individual items so I will add a field to allow selecting how many columns a portfolio should have.
+
+### Portfolio Item
+
+The portfolio items have an image slideshow, two content boxes and a back to portfolio button. Based on the portfolio page we are also going to need to create categories (which we should display) and it would be nice to add an optional view project button that would link externally somewhere.
+
+To fit the requirements laid out above I come up with these models:
+
+    ::python
+    # these will map to spans
+    COLUMNS_CHOICES = (
+        ('6', 'Two columns'), # two columns use span6
+        ('4', 'Three columns'), # three columns use span4
+        ('3', 'Four Columns'), # four columns use span3
+    )
+
+
+    class Portfolio(Page):
+        '''
+        A collection of individual portfolio items
+        '''
+        content = RichTextField(blank=True)
+        columns = models.CharField(max_length=1, choices=COLUMNS_CHOICES,
+            default='3')
+        class Meta:
+            verbose_name = _("Portfolio")
+            verbose_name_plural = _("Portfolios")
+
+
+    class PortfolioItem(Page, RichText):
+        '''
+        An individual portfolio item, should be nested under a Portfolio
+        '''
+        featured_image = FileField(verbose_name=_("Featured Image"),
+            upload_to=upload_to("theme.PortfolioItem.featured_image", "portfolio"),
+            format="Image", max_length=255, null=True, blank=True)
+        short_description = RichTextField(blank=True)
+        categories = models.ManyToManyField("PortfolioItemCategory",
+                                            verbose_name=_("Categories"),
+                                            blank=True,
+                                            related_name="portfolioitems")
+        href = models.CharField(max_length=2000, blank=True,
+            help_text="A link to the finished project (optional)")
+
+        class Meta:
+            verbose_name = _("Portfolio item")
+            verbose_name_plural = _("Portfolio items")
+
+
+    class PortfolioItemImage(Orderable):
+        '''
+        An image for a PortfolioItem
+        '''
+        portfolioitem = models.ForeignKey(PortfolioItem, related_name="images")
+        file = FileField(_("File"), max_length=200, format="Image",
+            upload_to=upload_to("theme.PortfolioItemImage.file", "portfolio items"))
+
+        class Meta:
+            verbose_name = _("Image")
+            verbose_name_plural = _("Images")
+
+
+    class PortfolioItemCategory(Slugged):
+        """
+        A category for grouping portfolio items into a series.
+        """
+
+        class Meta:
+            verbose_name = _("Portfolio Item Category")
+            verbose_name_plural = _("Portfolio Item Categories")
+            ordering = ("title",)
+
+&gt; Keep in mind that you have already created a stub of the Portfolio
+&gt; model when we created the HomePage. Be sure to replace it, we don't
+&gt; want to define it twice.
+
+Let's migrate our models:
+
+    ::bash
+    $ python manage.py schemamigration theme --auto
+    $ python manage.py migrate theme
+
+Next we need to update our theme's admin.py to have the new models show in the admin.   Import the newly created models and add:
+
+    ::python
+    class PortfolioItemImageInline(TabularDynamicInlineAdmin):
+        model = PortfolioItemImage
+
+
+    class PortfolioItemAdmin(PageAdmin):
+        inlines = (PortfolioItemImageInline,)
+
+    admin.site.register(PortfolioItem, PortfolioItemAdmin)
+    admin.site.register(PortfolioItemCategory)
+
+We now need to create two new templates, pages/portfolio.html and pages/portfolioitem.html. I'm not going to go into detail about those here, the techniques that you have learned throughout these tutorials should enable you to create these. If you get really stuck and have specific questions please do you use the comments to ask.
+
+One more freebie, I set up [page processors](http://mezzanine.jupo.org/docs/content-architecture.html#page-processors) for the Portfolio and PortfolioItem page types, they look like this:
+
+    ::python
+    from mezzanine.pages.page_processors import processor_for
+    from .models import Portfolio, PortfolioItem, PortfolioItemCategory
+
+
+    @processor_for(Portfolio)
+    def portfolio_processor(request, page):
+        '''
+        Adds a portfolio's portfolio items to the context
+        '''
+        # get the Portfolio's items, prefetching categories for performance
+        items = PortfolioItem.objects.published(
+            for_user=request.user).prefetch_related('categories')
+        items = items.filter(parent=page)
+        # filter out only cateogries that are user in the Portfolio's items
+        categories = PortfolioItemCategory.objects.filter(
+            portfolioitems__in=items).distinct()
+        return {'items': items, 'categories': categories}
+
+
+    @processor_for(PortfolioItem)
+    def portfolioitem_processor(request, page):
+        '''
+        Adds a portfolio's portfolio items to the context
+        '''
+        portfolioitem = PortfolioItem.objects.published(
+            for_user=request.user).prefetch_related(
+            'categories', 'images').get(id=page.portfolioitem.id)
+        return {'portfolioitem': portfolioitem}
+
+The last thing to do for portfolios is go back to your homepage, you remember making that right, and display items from the selected portfolio. You could create a page processor for the HomePage to put the right portfolio items in the context. It might look like this:
+
+    ::python
+    @processor_for(HomePage)
+    def home_processor(request, page):
+        items = PortfolioItem.objects.published(
+            for_user=request.user).prefetch_related('categories')
+        items = items.filter(parent=page.homepage.featured_portfolio)
+        return {'items': items}
+
+You could also make a templatetag to do it. In either case we are done with portfolios and finished creating our Mezzanine theme!
+
+Thanks for reading and I hope these tutorials have been helpful. If you made it all the way through thanks for sticking with it and congratulations! Sorry if my style of writing was inconsistent across the posts, I haven't blogged much till recently and I'm still figuring out what works for me.  If you enjoyed the posts, show some love and [follow me on Twitter](https://twitter.com/joshcartme). Sound off in the comments below with your own tips, errors you noticed, questions or anything else you want to say. [Lucid](https://mezzathe.me/theme/lucid/) is available on [MEZZaTHEME](http://mezzathe.me) so check it out!
+</summary></entry><entry><title>MEZZaTHEMing Part 3: Pages, extra DRY</title><link href="http://bitofpixels.com/blog/mezzatheming-part-3-pages-extra-dry/" rel="alternate"></link><updated>2013-09-18T22:12:16+00:00</updated><author><name>Josh Cartmell</name><uri>/blog/author/josh/</uri></author><id>http://bitofpixels.com/blog/mezzatheming-part-3-pages-extra-dry/</id><summary type="html">This is the third post in my series on creating themes for Mezzanine. [Part 1](/blog/mezzatheming-creating-mezzanine-themes-part-1-basehtml/) went over setting up base.html to provide a consistent header and footer across the whole site. [Part 2](/blog/mezzatheming-part-2-the-homepage/) covered adding your home page to Mezzanine's CMS.
+
+In this post I will describe the process that I use to style the built in page types.  I begin with a bit of the philosophy I try to adhere to. After I wax poetic I'll get back to the nuts and bolts, so hang in there!
+
+## The DRY Approach
+A good goal in programming is to make your code as DRY (don't repeat yourself) as possible.  As I develop Mezzanine themes I always try to keep that in mind.  Djagno's template inheritance encourages this and if you read the first post in this series you've already seen this in action. The header and footer are defined in base.html and nowhere else. This is great because if you wanted to change something about either of those you would just need to modify base.html and the changes would show up everywhere. The drought (see what I did there?) shouldn't stop with base.html, it should reach as far into your templates as possible.
+
+The default templates that come with Mezzanine are great example of very DRY templates. Most if not all of the built in page types have templates that define no additional markup and just make use of the Django blocks defined in base.html. Whenever I am creating a Mezzanine theme I try to do the same. The more individuated and complex the design for a particular page becomes the more difficult this can become. An extreme example of this is the `{% block all_content %}` I wrap all of base.html's content blocks with and described in my [last post](/blog/mezzatheming-part-2-the-homepage/). I use the `all_content` block as sparingly as is realistically possible (the homepage in the last post is an example of its use), trying to maintain the DRYness of my templates.
+
+### Finding water in the desert
+Making templates DRY sounds great, but sometimes it is a major pain and it seems much simpler to not worry about it. That may be true on occasion, but usually the short term time savings will not be worth the headaches that can arise if your templates aren't DRY.
+
+The following are some tips, tricks and common idioms that help me make my templates DRYer. Once I remove stuff from the panels to make it shorter, Mezzanine's default base.html looks essentially like this (note that the blocks and main markup are intact):
+
+    ::django
+    &lt;div class="container"&gt;
+        &lt;div class="row"&gt;
+            &lt;div class="span2 left"&gt;
+                {% block left_panel %}
+                {% endblock %}
+            &lt;/div&gt;
+            &lt;div class="span7 middle"&gt;
+                {% block main %}{% endblock %}
+            &lt;/div&gt;
+            &lt;div class="span3 right"&gt;
+                {% block right_panel %}
+                {% endblock %}
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+The first thing I would do is add an `all_content` block, depending on the situation and how I was planning on using it, this would either go outside the container or immediately after the row. The next thing I might do is wrap each of the span divs in another block, i.e.:
+
+    ::django
+    {% block left_panel_wrapper %}
+    &lt;div class="span2 left"&gt;
+        {% block left_panel %}
+        {% endblock %}
+    &lt;/div&gt;
+    {% endblock %}
+
+Then if I don't want the left panel to show up in a particular template I can simply add this line to it:
+
+    ::django
+    {% block left_panel_wrapper %}{% endblock %}
+
+Another trick is to add a span size block to some or all of the main content blocks blocks, i.e.:
+
+    ::django
+    &lt;div class="span{% block main_span_size %}7{% endblock %} middle"&gt;
+        {% block main %}
+        {% endblock %}
+    &lt;/div&gt;
+
+After using the first trick to remove the left panel I could add the following to the same template to make the main content fill the extra space:
+    
+    ::django
+    {% block main_span_size %}9{% endblock %}
+
+Taken together these two tricks can help you avoid writing the same markup in templates with slightly different span configurations.
+
+Often times the markup for the content of two html pages (a blog and gallery for example) will be almost identical save for a different css class. A simple, but shortsited approach would be to use the `all_content` block and then rewrite the exact same markup changing only a css class. A smarter approach is to add a class block to each of the content blocks (aside: depending on a number of factors including how many shared css classes there are it may or may not make sense to use this trick in combination with the previous span size block trick). These class blocks could look like this:
+
+    ::django
+    &lt;div class="span7 {% block main_class %}middle{% endblock %}"&gt;
+        {% block main %}
+        {% endblock %}
+    &lt;/div&gt;
+
+“middle” would be the default class but in a template you could add:
+    
+    ::django
+    {% block main_class %}gallery{% endblock %}
+
+or
+
+    ::django
+    {% block main_class %}blog{% endblock %}
+
+to create the correct styling for your blog or gallery pages.
+
+Using all of these idioms together the content sections of your base.html might end up looking like:
+
+    ::django
+    &lt;div class="container"&gt;
+        &lt;div class="row"&gt;
+
+            {% block left_wrapper %}
+            &lt;div class="span{% block left_span_size %}2{% endblock %} {% block left_class %}left{% endblock %}"&gt;
+                {% block left_panel %}
+                {% endblock %}
+            &lt;/div&gt;
+            {% endblock %}
+
+            {% block main_wrapper %}
+            &lt;div class="span{% block main_span_size %}7{% endblock %} {% block main_class %}middle{% endblock %}"&gt;
+                {% block main %}{% endblock %}
+            &lt;/div&gt;
+            {% endblock %}
+
+            {% block right_wrapper %}
+            &lt;div class="span{% block right_span_size %}3{% endblock %} {% block right_class %}right{% endblock %}"&gt;
+                {% block right_panel %}
+                {% endblock %}
+            &lt;/div&gt;
+            {% endblock %}
+
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+Don't get me wrong, I'm not advocating that you use every single one of these tricks in every project; use them when they help you make your code DRYer.
+
+## Desert[sic] was first, back to the main course
+Now that I have the background and reasoning out of the way I'll show you how to apply those principles to the theme that we are making, [Lucid](https://mezzathe.me/theme/lucid/).
+
+### Pages
+As things stand, if you run your dev server you can visit the home page, but any other page will just show the header and footer. This is because the template blocks that Mezzanine makes use of to display content have not yet been created.
+
+As discussed in detail above, we want to keep our templates DRY: let's open up a few of the html pages from the downloaded template that we are basing our theme on and see how similar they are structurally. I opened up about.html and blog.html, I scrolled down to about line 80 in each of them and compared their `&lt;!--page_container--&gt;` sections. We are in luck, they are very similar.
+
+One thing I don't like about the downloaded template is that the about page (which I am basing a lot of this on) has a content section that is basically full width with a lot of random span sizes. Rather than have the content pages have a full width content section, I'll have the content be a span8 and show the blog filter panel on pages. Something else to notice about the template is that titles are only shown in the breadcrumb menu. To handle this I'll make a custom breadcrumb menu template that doesn't show the current page and then separately show it with a title block. All in all my base.html (excluding the head, header and footer) now looks like this:
+
+    ::django
+    {% block all_content %}
+    &lt;!--page_container--&gt;
+    &lt;div class="page_container"&gt;
+        &lt;div class="breadcrumb"&gt;
+            &lt;div class="wrap"&gt;
+                &lt;div class="container"&gt;
+                    &lt;ul class="breadcrumb"&gt;
+                    {% spaceless %}
+                    {% block breadcrumb_menu %}{% page_menu "pages/menus/breadcrumb.html" %}{% endblock %}
+                    {% endspaceless %}
+                    &lt;li class="active"&gt;{% block title %}{% endblock %}&lt;/li&gt;
+                    &lt;/ul&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="wrap"&gt;
+            &lt;div class="container"&gt;
+                &lt;div class="row"&gt;
+                    &lt;div class="span8"&gt;
+                        {% block main %}{% endblock %}
+                    &lt;/div&gt;
+                    &lt;div class="span4"&gt;
+                        {% block right_panel %}{% include "blog/includes/filter_panel.html" %}{% endblock %}
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;!--//page_container--&gt;
+    {% endblock %}
+
+At this point you could decide you are finished. We had a problem: the header and footer showed on all pages except the home page; this problem has been eliminated through using the blocks that Mezzanine expects; your site will now have a consistent look and feel.  If you are satisfied feel free to stop reading, but I am not and will continue writing! The template we are converting to a Mezzanine theme still has a great blog design that we haven't implemented: there is a design for the contact page, and we can create Portfolio content types and then reuse those Portfolio pages for Mezzanine's galleries. I'll go over styling the galleries right now, a later post will cover the blog and portfolio and once you've finished going through all these posts you will be an expert and more than capable of styling the contact page on your own.
+
+### Galleries
+The portfolio page of the template we are working with is essentially a gallery, it just has some extras that don't fit the requirements of Mezzanine's galleries (categories, links, etc...). With that in mind it should be easy to update the design of Mezzanine Galleries to match.
+
+Let's start by getting the default gallery template:
+
+    ::bash
+    $ python manage.py collecttemplates -t pages/gallery.html
+    $ mv templates/pages/gallery.html theme/templates/pages/
+
+Open gallery.html and delete the `extra_js` block,  it's specific to Mezzanine's implementation and we don't need it.
+
+Next open one of the portfolio templates that we downloaded (I'll work with the three column style). In the downloaded template scroll down to about line 80 where it says `&lt;!--page_container--&gt;`. The breadcrumb menu is the same as before, but there is the extra options div (which we won't use since it doesn't apply to galleries) and rather than a span8 and a span4 the portfolio is just a bunch of span4s, each one a portfolio item (in our case gallery pictures). Its markup and classes are a bit different than the other pages we looked at and used to set up base.html, but we can easily use some of the tips and tricks I discussed before to make it work.
+
+The first difference I notice is that the outer `&lt;div class="container"&gt;` also has the class `inner_content`. I contemplate creating a `container_class` block to insert it, but before doing that I search through all the downloaded template files. The inner_content class is actually never used so it can safely be deleted. I'm tempted to also remove the `&lt;div class="projects"&gt;` but a search reveals that it is used as a selector in some javascript so it should be included.  I end up deciding to create `main_wrapper` and `right_wrapper` blocks and simply override those sections.  To actually set up the gallery page I copy and paste this into my gallery.html:
+
+    ::django
+    &lt;div class="projects"&gt;                                  
+        &lt;div class="span4 element category01" data-category="category01"&gt;
+            &lt;div class="hover_img"&gt;
+                &lt;img src="img/portfolio/1.jpg" alt="" /&gt;
+                &lt;span class="portfolio_zoom"&gt;&lt;a href="img/portfolio/1.jpg" rel="prettyPhoto[portfolio1]"&gt;&lt;/a&gt;&lt;/span&gt;
+                &lt;span class="portfolio_link"&gt;&lt;a href="single_portfolio.html"&gt;View item&lt;/a&gt;&lt;/span&gt;
+            &lt;/div&gt;
+            &lt;div class="item_description"&gt;
+                &lt;h6&gt;&lt;a href="single_portfolio.html"&gt;Lorem ipsum dolor&lt;/a&gt;&lt;/h6&gt;
+                &lt;div class="descr"&gt;Et dicta essent vis, sed vitae dictas vulputate ea, ex zril quaeque mentitum quo.&lt;/div&gt;
+            &lt;/div&gt;                                    
+        &lt;/div&gt;
+
+I then go through and cut and paste relevant parts of the existing gallery code into the code we inserted into the Gallery template. The first thing I do is wrap the span4 div in the forloop that iterates through gallery images. I delete those elements that don't apply and hook up those that do.  Finally, I delete the remaining, old gallery markup. In the end, gallery.html looks like this:
+
+    ::django
+    {% extends "pages/page.html" %}
+
+    {% load mezzanine_tags staticfiles %}
+
+    {% block main_wrapper %}
+    {{ block.super }}
+
+    &lt;div class="span12"&gt;
+    {% editable page.gallery.content %}
+    {{ page.gallery.content|richtext_filters|safe }}
+    {% endeditable %}
+    &lt;/div&gt;
+
+    &lt;div class="projects"&gt;
+    {% with page.gallery.images.all as images %}
+    {% for image in images %}                                 
+        &lt;div class="span4 element"&gt;
+            &lt;div class="hover_img"&gt;
+                &lt;img src="{{ MEDIA_URL }}{% thumbnail image.file 370 185 %}" alt="" /&gt;
+                &lt;span class="portfolio_zoom"&gt;&lt;a href="{{ MEDIA_URL }}{% thumbnail image.file 1200 0 %}" rel="prettyPhoto[portfolio1]"&gt;&lt;/a&gt;&lt;/span&gt;
+            &lt;/div&gt;
+            &lt;div class="item_description"&gt;
+                &lt;h6&gt;{{ image.description }}&lt;/h6&gt;
+            &lt;/div&gt;                                    
+        &lt;/div&gt;
+    {% endfor %}
+    {% endwith %}
+    &lt;/div&gt;
+    {% endblock %}
+
+    {% block right_wrapper %}{% endblock %}
+
+and I've updated the base.html content blocks to this:
+
+    ::django
+    {% block main_wrapper %}
+    &lt;div class="span8"&gt;
+        {% block main %}{% endblock %}
+    &lt;/div&gt;
+    {% endblock %}
+    {% block right_wrapper %}
+    &lt;div class="span4"&gt;
+        {% block right_panel %}{% include "blog/includes/filter_panel.html" %}{% endblock %}
+    &lt;/div&gt;
+    {% endblock %}\
+
+Going to a gallery should now show you a page that looks very similar to the downloaded templates portfolio. Hovering over the image provides a link, to show a larger version, but wait...the link is off center. The reason for this is that we deleted another link that was next to it. To fix this open theme/static/css/theme.css and around line 729, in the portfolio section update the last bit of the margin from -33px to -16.5px. The reasoning for this is that the link image is 33px and we want to pull it half of its width to the left so that it is exactly dead center.
+
+If you've made it this far, congratulations. We have more styling to do, but at this point you really have created a full Mezzanine theme. Stay tuned for the next post and ask your questions and let me know what you think so far in the comments below.
+</summary></entry><entry><title>MEZZaTHEMing Part 2: The HomePage</title><link href="http://bitofpixels.com/blog/mezzatheming-part-2-the-homepage/" rel="alternate"></link><updated>2013-09-18T00:28:12+00:00</updated><author><name>Josh Cartmell</name><uri>/blog/author/josh/</uri></author><id>http://bitofpixels.com/blog/mezzatheming-part-2-the-homepage/</id><summary type="html">This is the second post in a series of posts on how I create Mezzanine themes. These posts are a walkthrough of how I take an html template (the one I am using is freely available [here](http://www.templatescreme.com/free-website-jessica-white-free-bootstrap-website), and turn it into a fully functional Mezzanine site. I would recommend starting with the [first post](/blog/mezzatheming-creating-mezzanine-themes-part-1-basehtml/), if you haven’t yet read it. In that post I went over how I took the downloaded html template and created a base.html file for Mezzanine. These posts assume some level of familiarity with Mezzanine and Django. It is my belief that struggling, failing, trying again and sticking with something is a great way to learn. I'm posting a lot of code but some pieces may be left up to the individual reader to figure out or do for themselves. If you are having a lot of trouble, or get stuck, sound off in the comments below!  The final product, [Lucid](https://mezzathe.me/theme/lucid/), is available on [MEZZaTHEME](http://mezzathe.me).
+
+Today's post will be focusing on the Mezzanine [Page model](http://mezzanine.jupo.org/docs/content-architecture.html#the-page-model), and specifically a HomePage subclass that we will create. Pages are one of the most powerful features of Mezzanine. They provide the foundation for much of the content of a Mezzanine site and when used in conjunction with [page processors](http://mezzanine.jupo.org/docs/content-architecture.html#page-processors) they can do almost anything a traditional Django view can. (I wanted to just say anything, but added almost in case anyone was feeling nitpicky and figured out something you can do with a view that you can't do with a page processor.)
+
+## Page Templates
+
+Since these posts are about developing Mezzanine themes I am focusing a lot on templates.  With that in mind a brief discussion of how Mezzanine uses templates with Page types follows. If you are already familiar with how Mezzanine handles templates you can probably safely skip over this.
+
+### Page subclass templates
+
+Mezzanine performs a series of checks when choosing what template to render a page with.  From the [docs](http://mezzanine.jupo.org/docs/content-architecture.html#page-templates):
+
+&gt; By default the template pages/page.html is used, but if a custom
+&gt; template exists it will be used instead. The check for a custom
+&gt; template will first check for a template with the same name as the
+&gt; Page instance’s slug, and if not then a template with a name derived
+&gt; from the subclass model’s name is checked for. So given the above
+&gt; example the templates pages/dr-seuss.html and pages/author.html would
+&gt; be checked for respectively.
+
+In the example referenced dr-seuss is the slug of a page and Author is the custom page model being used.
+
+In general  you need to create one template per custom page type. Later, when I go over how I create the HomePage Page type I will create a corresponding homepage.html template.
+
+### page.html
+
+Although not strictly necessary, all of the built in page type templates (gallery.html, richtextpage.html, etc...) inherit from page.html. This means that anything you put in page.html will be present across all page types (unless it's overridden in the inheriting template).  By default page.html sets the title tag, meta descriptions and keywords and other behind the scenes items. While I rarely make modifications to page.html, I have occasionally: for example, when I added a featured image field to the Page model, I wanted to provide a way to display it in the header of any page type. If you want to read more about that check out the section entitled Field Injection in [this blog post](/blog/techniques-for-modifying-mezzanine/).  Page.html is rarely involved in the design/layout of pages and mainly serves as a way of setting meta data that is common to all Page subclasses. Anyways, enough background: onward!
+
+## HomePage: your first Page subclass
+
+Lately I've been making a HomePage Page type for all of the Mezzanine sites I develop. I find that clients really like the ease of updating. Just today, a long-time client told me, "I love how you build the homepage in the backend; it’s super easy." Mezzanine does not require the creation of a HomePage Page type and it does take a little more work, but I find that it takes the most advantage of Mezzanine's built in features and provides the best UX for end users.
+
+### The models
+
+To get started, let's fire up the development server and look at our site in a browser. Currently (as of the end of the last post in this series) going to any page on your development site should show you the home page. We will fix that a bit later but for now simply being able to look at the home page is what we want. Ignoring the header and footer and scanning the page I see:
+
+ - A slider (this one is just images, sometimes there will be text, links, etc...)
+ - Four “icon/title/text blurb” sections
+ - A heading with two lines of text
+ - A “featured works” slider
+ - An area of free form content
+ - A “latest news” slider
+ - A “latest posts” slider
+
+After reviewing I decide that I will eliminate the news slider because for my purposes it is redundant with the posts slider. I will make the free form content area full width to use up the extra space. To allow all this content to be modified in the backend I will make four models: HomePage, Slide, IconBlurb and Portfolio.  The models end up looking like this:
+
+    ::python
+
+
+    from django.db import models
+    from django.utils.translation import ugettext_lazy as _
+
+    from mezzanine.core.fields import FileField, RichTextField
+    from mezzanine.core.models import RichText, Orderable, Slugged
+    from mezzanine.pages.models import Page
+    from mezzanine.utils.models import upload_to
+
+
+    class HomePage(Page, RichText):
+        '''
+        A page representing the format of the home page
+        '''
+        heading = models.CharField(max_length=200,
+            help_text="The heading under the icon blurbs")
+        subheading = models.CharField(max_length=200,
+            help_text="The subheading just below the heading")
+        featured_works_heading = models.CharField(max_length=200,
+            default="Featured Works")
+        featured_portfolio = models.ForeignKey("Portfolio", blank=True, null=True,
+            help_text="If selected items from this portfolio will be featured "
+                      "on the home page.")
+        content_heading = models.CharField(max_length=200,
+            default="About us!")
+        latest_posts_heading = models.CharField(max_length=200,
+            default="Latest Posts")
+
+        class Meta:
+            verbose_name = _("Home page")
+            verbose_name_plural = _("Home pages")
+
+
+    class Slide(Orderable):
+        '''
+        A slide in a slider connected to a HomePage
+        '''
+        homepage = models.ForeignKey(HomePage, related_name="slides")
+        image = FileField(verbose_name=_("Image"),
+            upload_to=upload_to("theme.Slide.image", "slider"),
+            format="Image", max_length=255, null=True, blank=True)
+
+
+    class IconBlurb(Orderable):
+        '''
+        An icon box on a HomePage
+        '''
+        homepage = models.ForeignKey(HomePage, related_name="blurbs")
+        icon = FileField(verbose_name=_("Image"),
+            upload_to=upload_to("theme.IconBlurb.icon", "icons"),
+            format="Image", max_length=255)
+        title = models.CharField(max_length=200)
+        content = models.TextField()
+        link = models.CharField(max_length=2000, blank=True,
+            help_text="Optional, if provided clicking the blurb will go here.")
+
+
+    class Portfolio(Page):
+        '''
+        A collection of individual portfolio items
+        '''
+        class Meta:
+            verbose_name = _("Portfolio")
+            verbose_name_plural = _("Portfolios")
+
+We will flesh out the Portfolio class later, but for now the stub allows us to set up the ForeignKey on HomePage that will allow us to display items from a particular portfolio on a HomePage.  Now that we have our models, let's create some migrations:
+
+    ::bash
+    $ python manage.py schemamigration theme --initial
+    $ python manage.py migrate theme
+
+Next, we need to create an admin.py file in theme and create the admin classes for our models.  These are simple enough--a TabularDynamicInlineAdmin for each of Slide and IconBlurb and a subclass of PageAdmin for HomePage that includes the two inlines. Finally we register HomePage with its custom admin and Portfolio with PageAdmin. Fire up the server again and go to the Page section of the admin. If you click the add dropdown you should now have two additional options, Home page and Portfolio.
+
+Next we need to update our project's urls.py so that it looks for a page for the home page, rather than directly rendering index.html. Open your projects urls.py. Comment out or delete this line:
+
+    ::bash
+    url("^$", direct_to_template, {"template": "index.html"}, name="home"),
+
+and uncomment this line:
+
+    ::bash
+    url("^$", "mezzanine.pages.views.page", {"slug": "/"}, name="home"),
+
+Fire up the dev server again and try to visit your home page. You will get a page not found error. To remedy this go back to the page admin, and add a home page. Fill out some content for the home page, for now we can leave the slides and icon blurbs empty. Last of all, before saving click the Meta data section and enter `/` for the url.
+
+Run the dev server and go to the home page; you should still see the home page, but it's not being driven by the admin yet.
+
+### pages/index.html
+
+Create index.html in theme/templates/pages and make it extend pages/page.html (pages/index.html is the template that Mezzanine looks for when the homepage is a Page). You should also load static and mezzanine_tags as we will make use of some of them later. I generally also create homepage.html and have it to extend the newly created pages/index.html. (This is so that a user could create as many Home pages as he/she likes.)
+
+Now open up your base.html and cut any content between the header and footer and replace it with a new block like so:
+
+    ::html
+    &lt;!--//header--&gt;    
+     
+    {% block all_content %}{% endblock %}
+    
+    &lt;!--footer--&gt;
+
+In your newly created index.html add the all_content block and paste all of the content you cut out of base.html. In a future post we will create some of the more traditional Mezzanine blocks inside of all_content, like title, main and right_panel, but I almost always make an all_content block for use by the home page since the home page's design is usually fairly unique and doesn't include things like a title, breadcrumb menu, right panel, etc…. Your homepage still isn't being driven by Mezzanine and should look exactly the same, but we are getting closer.
+
+It is finally time to start hooking up your index.html template to Mezzanine. Go through and replace the hard coded content with Django template language code. For example my slider code ends up looking like this:
+
+    ::django
+    {% if page.homepage.slides.all %}
+    &lt;!--slider--&gt;
+    &lt;div id="main_slider"&gt;
+        &lt;div class="camera_wrap" id="camera_wrap_1"&gt;
+            {% for slide in page.homepage.slides.all %}
+            &lt;div data-src="{{ MEDIA_URL }}{% thumbnail slide.image 1920 690 %}"&gt;&lt;/div&gt;
+            {% endfor %}                                       
+        &lt;/div&gt;&lt;!-- #camera_wrap_1 --&gt;
+        &lt;div class="clear"&gt;&lt;/div&gt;   
+    &lt;/div&gt;        
+    &lt;!--//slider--&gt;
+    {% endif %}
+
+I update the heading/subheading to this:
+
+    ::django
+    {% editable page.homepage.heading page.homepage.subheading %}
+    {{ page.homepage.heading }}
+    &lt;span&gt;{{ page.homepage.subheading }}&lt;/span&gt;
+    {% endeditable %}
+
+Make sure to use the editable template tag when possible to make editing via the front end possible: it’s a great feature of Mezzanine and easy to implement.  After you go through and hook up everything (you can drive the recent posts slider with the blog_recent_posts template tag and we will go over hooking up the featured works in a future post) you will have a fully functional home page that is editable via the Mezzanine admin. Mission accomplished!
+
+This concludes the second post on how I make Mezzanine themes. At this point you should have a base.html that creates a consistent header and footer across the site and a homepage that is fully editable via the admin interface. If you go to any page other than the home page you should see just the header and footer with no other content (since we removed all the other content from base.html).  Stay tuned for the next post which will continue this tutorial and get you farther towards creating a complete Mezzanine theme.
+
+
+</summary></entry><entry><title>MEZZaTHEMing (creating Mezzanine themes) Part 1: base.html</title><link href="http://bitofpixels.com/blog/mezzatheming-creating-mezzanine-themes-part-1-basehtml/" rel="alternate"></link><updated>2013-09-16T21:28:33+00:00</updated><author><name>Josh Cartmell</name><uri>/blog/author/josh/</uri></author><id>http://bitofpixels.com/blog/mezzatheming-creating-mezzanine-themes-part-1-basehtml/</id><summary type="html">This is the first part of a series of blog posts that describes the process that I use to create themes for Mezzanine. In this case you will be following along as I create the theme [Lucid](https://mezzathe.me/theme/lucid/), which you can purchase on [MEZZaTHEME](http://mezzathe.me). Lucid is based on the responsive Twitter Bootstrap template that you can find [here](http://www.templatescreme.com/free-website-jessica-white-free-bootstrap-website). Keep in mind that there are many approaches that could be used to create a theme for Mezzanine and this is just one of them. If you see something that I could do better, notice a bug, or have anything else to say, sound off in the comments below!
+
+This post will focus on how I start out: modifying base.html. Since every Mezzanine template inherits from base.html, the base.html design and layout dictate much of the design and layout of your site. For this reason I always start working with base.html first.
+
+## Getting Started
+
+ 1. Create a new Mezzanine project and a Django app that will hold static assets and ultimately be the theme:
+
+        ::bash
+        $ mezzanine-project lucid
+        $ cd lucid
+        $ python manage.py startapp theme
+        $ mkdir theme/static
+        $ python manage.py createdb --noinput
+
+ 2. Next copy the static files (css, js, images) from the downloaded template to the theme's static directory.
+
+ 3. Add `"theme",` to the `INSTALLED_APPS` setting in settings.py. It should go above any Mezzanine apps so that theme's templates override Mezzanine's defaults.
+
+Run the server and check your site in a browser to make sure everything is working correctly:
+
+    ::bash
+    $ python manage.py runserver
+
+
+## Base.html
+ 1. Copy Mezzanine's base.html template to your theme directory:
+
+        ::bash
+        $ python manage.py collecttemplates -t base.html
+        $ mv templates/ theme/
+
+ 2. Open the newly copied base.html and the index.html file from the template we are working with. Copy the css, javascript and any other additional items (for example Google fonts in this case) from the head of index.html to the head of the theme's base.html. (In this case the javascripts are in the footer but I will be moving them to the head).
+
+&gt; Be careful to leave any template code intact.  For example deleting
+&gt; `{% block meta_title %}{% endblock %}` would prevent the `&lt;title&gt;` tag
+&gt; from being set properly. I also usually rename the bootstrap files to
+&gt; include their version. So in this case I renamed `bootstrap.css` and
+&gt; `bootstrap-responsive.css` to `bootstrap.2.2.1.css` and
+&gt; `bootstrap-responsive.2.2.1.css`. This prevents a the wrong version
+&gt; of bootstrap from being loaded (from mezzanine or any other app you
+&gt; may have installed).
+
+At this point the head section of my base.html looks like this:
+
+    ::html
+    &lt;head&gt;
+
+        &lt;meta http-equiv="Content-type" content="text/html; charset=utf-8"&gt;
+        &lt;meta name="viewport" content="width=device-width"&gt;
+        &lt;meta name="keywords" content="{% block meta_keywords %}{% endblock %}"&gt;
+        &lt;meta name="description" content="{% block meta_description %}{% endblock %}"&gt;
+        &lt;title&gt;{% block meta_title %}{% endblock %}{% if settings.SITE_TITLE %} | {{ settings.SITE_TITLE }}{% endif %}&lt;/title&gt;
+        &lt;link rel="shortcut icon" href="{% static "img/favicon.ico" %}"&gt;
+
+        {% ifinstalled mezzanine.blog %}
+        &lt;link rel="alternate" type="application/rss+xml" title="RSS" href="{% url "blog_post_feed" "rss" %}"&gt;
+        &lt;link rel="alternate" type="application/atom+xml" title="Atom" href="{% url "blog_post_feed" "atom" %}"&gt;
+        {% endifinstalled %}
+
+        &lt;link href='//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800' rel='stylesheet' type='text/css'&gt;
+
+        {% compress css %}
+        &lt;link href="css/prettyPhoto.css" rel="stylesheet" type="text/css" /&gt;
+        &lt;link rel="stylesheet" id="camera-css"  href="css/camera.css" type="text/css" media="all"&gt;
+        &lt;link href="css/bootstrap.2.2.1.css" rel="stylesheet"&gt;
+        &lt;link href="css/theme.css" rel="stylesheet"&gt;
+        &lt;link rel="stylesheet" type="text/css" href="css/skins/tango/skin.css" /&gt;
+        &lt;link href="css/bootstrap-responsive.2.2.1.css" rel="stylesheet"&gt;
+        {% block extra_css %}{% endblock %}
+        {% endcompress %}
+
+        &lt;!--[if lt IE 9]&gt;
+            &lt;script src="http://html5shim.googlecode.com/svn/trunk/html5.js"&gt;&lt;/script&gt;
+        &lt;![endif]--&gt;   
+
+        {% compress js %}
+        &lt;script src="{% static "mezzanine/js/"|add:settings.JQUERY_FILENAME %}"&gt;&lt;/script&gt;
+        &lt;script type="text/javascript" src="js/jquery.easing.1.3.js"&gt;&lt;/script&gt;
+        &lt;script type="text/javascript" src="js/jquery.mobile.customized.min.js"&gt;&lt;/script&gt;
+        &lt;script type="text/javascript" src="js/camera.js"&gt;&lt;/script&gt;
+        &lt;script src="js/bootstrap.js"&gt;&lt;/script&gt;
+        &lt;script src="js/superfish.js"&gt;&lt;/script&gt;
+        &lt;script type="text/javascript" src="js/jquery.prettyPhoto.js"&gt;&lt;/script&gt;
+        &lt;script type="text/javascript" src="js/jquery.jcarousel.js"&gt;&lt;/script&gt;
+        &lt;script type="text/javascript" src="js/jquery.tweet.js"&gt;&lt;/script&gt;
+        &lt;script type="text/javascript" src="js/myscript.js"&gt;&lt;/script&gt;
+        &lt;script type="text/javascript"&gt;
+            $(document).ready(function(){   
+                //Slider
+                $('#camera_wrap_1').camera();
+                
+                //Featured works &amp; latest posts
+                $('#mycarousel, #mycarousel2, #newscarousel').jcarousel();                                                  
+            });     
+        &lt;/script&gt;
+        {% block extra_js %}{% endblock %}
+        {% endcompress %}
+
+        {% block extra_head %}{% endblock %}
+
+    &lt;/head&gt;
+
+### Updating static asset locations
+
+The only outstanding problem with our static assets is that the css and javascript refer to locations that don't exist.  To remedy this I use find and replace to add in the static template tag.  For example I find **href="css** and mass replace with **href="{% static "css**; then I find **.css"** and replace it with **.css" %}"**.  I do the same thing with javascript and now all the css and javascript should be properly linked. Any resources that refer to an outside domain may need to be fixed.  For example, if you end up with:
+
+    ::html
+    &lt;!--[if lt IE 9]&gt;
+        &lt;script src="http://html5shim.googlecode.com/svn/trunk/html5.js" %}"&gt;&lt;/script&gt;
+    &lt;![endif]--&gt;   
+
+Get rid of the %}"
+
+### Setting up the &amp;lt;body&amp;gt;
+
+Finally copy everything from the `&lt;body&gt;` of the template's index.html and paste it to the body of your theme's base.html replacing everything except `{% include "includes/footer_scripts.html" %}` at the end. Using some find and replace magic again update the src of all images to properly use the static template tag. Run the dev server again and check the site in a browser: it should look exactly the same as opening the template's index.html in browser. If it doesn't, go back and double check everything. I always start with making sure that all the css files are loading properly. For example, as I was creating this tutorial, I had `&lt;link href="{% static "css/bootstrap.2.2.1.css" %}" rel="stylesheet"&gt;` in the head of base.html but hadn't actually renamed the corresponding file; this caused the page to not load.
+
+If you tried to go to any other page you would see the exact same thing since we blew out all the blocks when we copied everything over to the body of base.html. This is to be expected and we will add back block_tags later. Now that we have a skeleton of the site up it's time to begin getting content to be driven by Mezzanine.
+
+#### The Header
+The page header (including the logo, menu and social media icons) will be present across most if not all of you Mezzanine project. Starting with the opening body tag I begin working my way down through my base.html.
+
+First up, I change the logo to point to "/" instead of "index.html".  This would also be a good time to update the logo.  I replaced the image with `{{ settings.SITE_TITLE }}`, increased the font size and gave it the same line height as the row it is in--but you can do whatever you want.
+
+Moving down I see a ul that contains links to social networks.  To make this easy to manage I add a defaults.py to the theme app and corresponding settings; these settings will then be editable in the admin interface of the site, e.g.:
+
+    ::python
+    register_setting(
+        name="SOCIAL_LINK_FACEBOOK",
+        label=_("Facebook link"),
+        description=_("If present a Facebook icon linking here will be in the "
+            "header."),
+        editable=True,
+        default="https://facebook.com/mezzatheme",
+    )
+
+I add each of the setting to `TEMPLATE_ACCESSIBLE_SETTINGS` and then I update each of the list elements to look like this:
+
+    ::html
+    {% if settings.SOCIAL_LINK_FACEBOOK %}&lt;li&gt;
+        &lt;a target="_blank" href="{{ settings.SOCIAL_LINK_FACEBOOK }}" class="facebook"&gt;Facebook&lt;/a&gt;
+    &lt;/li&gt;{% endif %}
+
+Next I come to the dropdown menu.  First I copy the `pages/menus/dropdown.html` to my theme:
+
+    ::bash
+    $ python manage.py collecttemplates -t pages/menus/dropdown.html
+    $ mv templates/pages/ theme/templates/
+
+After making a few minor changes to dropdown.html I replaced the whole menu ul in base.html with:
+
+    ::html
+    {% page_menu "pages/menus/dropdown.html" %}
+
+The menu is now driven by Mezzanine. I will leave the actual changes that were made as an exercise for the reader but it was a very small amount of changes (less than I can count on my fingers; don't worry, I don't have eleven fingers or anything like that).
+
+After setting up the dropdown menu the header is finished.  All of the content after the end of the header and before the footer is specific to the home page so I skip over it for now and move onto the footer.
+
+#### The Footer
+Along with the header, the footer will also be present across most--if not all--of your Mezzanine project. I use the same approach as I used with the header, starting at the top and working my way down.
+
+The first item I come across is what would have been a javascript Twitter widget. Since Twitter got rid of their open API that was easy to access with javscript this widget will not work. I'll replace it with one of Twitter's widgets which can be created [here](https://twitter.com/settings/widgets). I also remove tweet.js from the javscripts in the head and open myscript.js and remove any code that was related to the old Twitter widget.
+
+Continuing on there is a contact form and a testimonials box.  To simplify things a bit I will replace both of these with a box that contains the content of `settings.SITE_TAGLINE`.  To accommodate the change in the number of items in the footer I update each of the footer boxes to be span4s instead of span3s.
+
+The last item in the footer widgets is a Flickr widget that pulls in the most recent photos from a Flickr account. Currently the id of this account is hard coded into myscript.js. To make this dynamic I create a setting in the earlier created defaults.py to be the Flickr id that photos are retrieved from. I then pull the Flickr code out of myscript.js and add it to a jquery document ready function directly in the head of base.html. I replace the id with `{{ settings.FLICKR_ID }}` and the flickr widget is now dynamically controlled.
+
+Next is more standard footer items (logo, copyright notice, another menu, etc..,). I replace the logo with the SITE_TITLE again (also updating the link location) and style it as necessary. I update the copyright notice to display the current year and the correct site name. I update the search box's action to point to `{% url 'search' %}`, make its method `get` and change the text input's name to q (since this is what Mezzanine expects).
+
+Next are more social media icons which I handle the same way as I did in the header.
+
+Last of all is another menu, I create a menu template to handle it and insert a call to `page_menu` into base.html in place of it. Now that all of the menus have been created, I open up the project's settings.py and update `PAGE_MENU_TEMPLATES` to reflect the menus that are present. It ends up looking like this:
+    
+    PAGE_MENU_TEMPLATES = (
+        (1, "Top navigation bar", "pages/menus/dropdown.html"),
+        (2, "Footer", "pages/menus/flat_footer.html"),
+    )
+
+## Final Thoughts
+That's it for base.html. Your Mezzanine project has a header and footer that will be present throughout your site.The skeleton of your site is coming together and you are ready to move on! Stay tuned for the next blog post in this series.
+</summary></entry><entry><title>Accessing the model instance in a ModelForm&amp;#39;s widget</title><link href="http://bitofpixels.com/blog/accessing-the-model-instance-in-a-model-forms-widget/" rel="alternate"></link><updated>2013-08-14T01:40:32+00:00</updated><author><name>Josh Cartmell</name><uri>/blog/author/josh/</uri></author><id>http://bitofpixels.com/blog/accessing-the-model-instance-in-a-model-forms-widget/</id><summary type="html">I recently integrated [Django Sendfile][1] with a website to provide downloads that required authentication (even knowing the location of an authentication requiring file in the static directory will not allow you to download it thanks to some Apache conf magic).
+
+That was all well and good, but a result was that it was no longer possible to download those files through the admin interface using the default Django file input widget.  I figured out that if I could access the current model instance in the FileInput's render I would be able to create a working download link.  After a few failed attempts and a lot of Googling I created a custom FileInput widget that could do just that.  To do so, I created a ModelForm that looked something like this:
+
+    ::python
+    class DummyForm(forms.ModelForm):
+        # form code here
+        def __init__(self, *args, **kwargs):
+            super(DummyForm, self).__init__(*args, **kwargs)
+            if hasattr(self, 'instance'):
+                self.fields['example_field'].widget.instance = self.instance
+Then in the render it's possible to access `self.instance` (you should check if self has the attribute instance because inputs associated with unsaved models will not).
+
+  [1]: https://github.com/johnsensible/django-sendfile</summary></entry><entry><title>Disabling Mezzanine Comments</title><link href="http://bitofpixels.com/blog/disabling-mezzanine-comments/" rel="alternate"></link><updated>2013-07-11T21:11:58+00:00</updated><author><name>Josh Cartmell</name><uri>/blog/author/josh/</uri></author><id>http://bitofpixels.com/blog/disabling-mezzanine-comments/</id><summary type="html">I was working on further developing a website that is built in Mezzanine and needed to completely disable the built in comments.  As far as I know there is no setting that controls this so I wanted to figure out the easiest/most efficient way to do this.  Obviously I could go through every template that used the comments_for template tag and remove it (removing the comment form from the associated page), but that would make it more difficult to re-enable comments in the future if so desired.  What I ended up settling on was creating an empty generic/includes/comments.html and then adding the following line to my project's url.py:
+
+        ("comment/", page_not_found),
+`page_not_found` is imported from django like so `from django.views.defaults import page_not_found`
+
+The result of the two above actions is that the comments form is never rendered (comments_for simply renders an empty template) and even a clever person familiar with Mezzanine couldn't post a comment because /comment/ now produces a 404.</summary></entry><entry><title>Techniques for modifying Mezzanine</title><link href="http://bitofpixels.com/blog/techniques-for-modifying-mezzanine/" rel="alternate"></link><updated>2013-07-02T18:38:56+00:00</updated><author><name>Josh Cartmell</name><uri>/blog/author/josh/</uri></author><id>http://bitofpixels.com/blog/techniques-for-modifying-mezzanine/</id><summary type="html">A question that often comes up on the Mezzanine mailing list is "how can I make Mezzanine do x".  Modifying Mezzanine's code directly is an option but that will make upgrading Mezzanine painful.  Below I discuss a number of techniques that can be used to modify Mezzanine without actually touching Mezzanine's codebase.
+
+## Monkey Patching
+
+In case you are unfamiliar, Wikipedia defines a monkey patch as 
+
+&gt; "a way to extend or modify the run-time code of dynamic languages
+&gt; without altering the original source code."
+
+Here's an example:
+
+    original_get_absolute_url = deepcopy(Page.get_absolute_url) 
+    def menu_item_get_absolute_url(self):
+        """
+        Returns a menuitem's href if this is a menuitem, otherwise, returns the
+        original Page get_absolute_url
+        """
+        if self.content_model == "menuitem":
+            return self.get_content_model().get_absolute_url()
+        return original_get_absolute_url(self)
+    Page.get_absolute_url = menu_item_get_absolute_url
+
+In the previous example Page's get_absolute_url was monkey patched to provide custom functionality if the Page was of the type "menuitem."  A good place to put code like this is in a models.py file.
+
+## Field Injection
+
+The field injection provided by Mezzanine is useful if you want to add additional fields to a Django model.  Here is an example of adding a featured image to Pages:
+
+    EXTRA_MODEL_FIELDS = (
+        (
+            "mezzanine.pages.models.Page.featured_image",
+            "mezzanine.core.fields.FileField",
+            ("Header image",),
+            {"blank": True,
+             "null": True,
+             "upload_to": "page_header",
+             "format": "Image",
+             "max_length": 255},
+        ),
+    )
+
+For the featured image to show up in the admin you would also need to register and unregister the Page admin classes, including featured_image in their fieldsets.  Here is an example admin.py that would do this:
+
+    from copy import deepcopy
+    
+    from django.contrib import admin
+    
+    from mezzanine.forms.admin import FormAdmin
+    from mezzanine.forms.models import Form
+    from mezzanine.galleries.admin import GalleryAdmin
+    from mezzanine.galleries.models import Gallery
+    from mezzanine.pages.admin import PageAdmin
+    from mezzanine.pages.models import RichTextPage
+    
+    
+    # add the featured image to page subclasses in the admin
+    page_fieldsets = deepcopy(PageAdmin.fieldsets)
+    page_fieldsets[0][1]["fields"] += ("featured_image",)
+    PageAdmin.fieldsets = page_fieldsets
+    GalleryAdmin.fieldsets = page_fieldsets
+    
+    form_fieldsets = deepcopy(FormAdmin.fieldsets)
+    form_fieldsets[0][1]["fields"] += ("featured_image",)
+    FormAdmin.fieldsets = form_fieldsets
+    
+    admin.site.unregister(Form)
+    admin.site.register(Form, FormAdmin)
+    admin.site.unregister(Gallery)
+    admin.site.register(Gallery, GalleryAdmin)
+    admin.site.unregister(RichTextPage)
+    admin.site.register(RichTextPage, PageAdmin)
+
+## Python Mixins
+
+Mixins are a feature of Python that can be used to dynamically add methods to a Python class.  In particular we will make use of the fact that mixins can be added to a class without modifying its source code directly.   This technique could be used to add arbitrary methods to Pages, BlogPosts, Cartridge Categories or any other class.  Here is an example that adds a Hello World method to Pages.
+
+    from mezzanine.pages.models import Page
+    
+    
+    class PageExtend:
+        def hello_world(self):
+            return 'Hello World from %s' % self.title
+    Page.__bases__ += (PageExtend,)
+
+This code could also live in a models.py although anywhere that get's imported should work.
+
+There are many other ways that Mezzanine (and more generally Django) could be extended.  Know of any, or see something I did wrong, let's hear it in the comments below.</summary></entry><entry><title>Update Mezzanine blog posts to allow being marked login required</title><link href="http://bitofpixels.com/blog/updating-mezzanine-blog-posts-to-allow-being-marked-login-required/" rel="alternate"></link><updated>2013-06-25T21:17:11+00:00</updated><author><name>Josh Cartmell</name><uri>/blog/author/josh/</uri></author><id>http://bitofpixels.com/blog/updating-mezzanine-blog-posts-to-allow-being-marked-login-required/</id><summary type="html">I was working on developing a [Mezzanine](http://mezzanine.jupo.org) site where a
+desired feature was to allow marking BlogPosts as login required, the same
+way that Pages can be marked as login required.  After implenting a solution
+I decided it would be nice to document it for myself, and anyone else
+who is interested.
+
+## The code
+A prerequisite to the following code is creating a django app.
+Throughout the post the name `blog_login_required` is used, but any Django app will do.
+
+Let's get started:
+
+    python manage.py startapp blog_login_required
+After creating the app add it to your `INSTALLED_APPS` setting.
+
+### 1. settings.py
+First let's add a login_required field to BlogPosts using the
+[EXTRA\_MODEL\_FIELDS](http://mezzanine.jupo.org/docs/model-customization.html#field-injection)
+Mezzanine setting.
+    
+    :::python
+    EXTRA_MODEL_FIELDS = (
+        (
+            "mezzanine.blog.models.BlogPost.login_required",
+            "BooleanField",
+            ("Login required",),
+            {"default": False},
+        ),
+    )
+If you are using South migrations, which you should be, we need to create
+the migrations for this.  We will put the migrations in an external app to
+avoid modifying Mezzanine directly.  To do this run the following two commands:
+
+    $ python manage.py schemamigration blog —auto  —stdout » blog_login_required/migrations/0001_add_login_required_to_blogpost.py
+    $ python manage.py migrate blog_login_required
+
+### 2. views.py
+The built in Mezzanine view for BlogPosts doesn't handle login required so
+I created my own.  In this case I opted to recreate the view because the
+original is very small (4 or 5 lines) and this was more efficient.  If it was
+more complicated I may have opted to use a middleware, the disadvantage of
+this would be that the middleware would have to look up the blog post just to
+check login_required and the view would later lookup the same blog post. 
+    
+    :::python
+    from django.contrib.auth import REDIRECT_FIELD_NAME
+    from django.shortcuts import get_object_or_404, redirect
+    from django.utils.http import urlquote
+
+    from mezzanine.blog.models import BlogPost
+    from mezzanine.conf import settings
+    from mezzanine.utils.views import render
+
+
+    def blog_post_detail(request, slug, year=None, month=None, day=None,
+                         template="blog/blog_post_detail.html"):
+        """. Custom templates are checked for using the name
+        ``blog/blog_post_detail_XXX.html`` where ``XXX`` is the blog
+        posts's slug.
+        """
+        blog_posts = BlogPost.objects.published(
+            for_user=request.user).select_related()
+        blog_post = get_object_or_404(blog_posts, slug=slug)
+
+        if blog_post.login_required and not request.user.is_authenticated():
+            path = urlquote(request.get_full_path())
+            bits = (settings.LOGIN_URL, REDIRECT_FIELD_NAME, path)
+            return redirect("%s?%s=%s" % bits)
+
+        context = {"blog_post": blog_post, "editable_obj": blog_post}
+        templates = [u"blog/blog_post_detail_%s.html" % unicode(slug), template]
+        return render(request, templates, context)
+
+### 3. urls.py
+Next we need to create url patterns to instruct the site to use the new
+blog post detail rather than Mezzanine's.  Because of the required order of the blog url patterns I recreated all of them, there may be a better solution, but this is the best I could think of. These patterns can be placed directly in your project's urls, they just need to show up before Mezzanine urls are included.
+
+    :::python
+    url("^%s%sfeeds/(?P&lt;format&gt;.*)%s$" % _blog_format_string,
+        "mezzanine.blog.views.blog_post_feed", name="blog_post_feed"),
+    url("^%s%stag/(?P&lt;tag&gt;.*)/feeds/(?P&lt;format&gt;.*)%s$" % _blog_format_string,
+        "mezzanine.blog.views.blog_post_feed", name="blog_post_feed_tag"),
+    url("^%s%stag/(?P&lt;tag&gt;.*)%s$" % _blog_format_string, "mezzanine.blog.views.blog_post_list",
+        name="blog_post_list_tag"),
+    url("^%s%scategory/(?P&lt;category&gt;.*)/feeds/(?P&lt;format&gt;.*)%s$" % _blog_format_string,
+        "mezzanine.blog.views.blog_post_feed", name="blog_post_feed_category"),
+    url("^%s%scategory/(?P&lt;category&gt;.*)%s$" % _blog_format_string,
+        "mezzanine.blog.views.blog_post_list", name="blog_post_list_category"),
+    url("^%s%sauthor/(?P&lt;username&gt;.*)/feeds/(?P&lt;format&gt;.*)%s$" % _blog_format_string,
+        "mezzanine.blog.views.blog_post_feed", name="blog_post_feed_author"),
+    url("^%s%sauthor/(?P&lt;username&gt;.*)%s$" % _blog_format_string,
+        "mezzanine.blog.views.blog_post_list", name="blog_post_list_author"),
+    url("^%s%sarchive/(?P&lt;year&gt;\d{4})/(?P&lt;month&gt;\d{1,2})%s$" % _blog_format_string,
+        "mezzanine.blog.views.blog_post_list", name="blog_post_list_month"),
+    url("^%s%sarchive/(?P&lt;year&gt;.*)%s$" % _blog_format_string,
+        "mezzanine.blog.views.blog_post_list", name="blog_post_list_year"),
+    url("^%s%s(?P&lt;year&gt;\d{4})/(?P&lt;month&gt;\d{1,2})/(?P&lt;day&gt;\d{1,2})/"
+        "(?P&lt;slug&gt;.*)%s$" % _blog_format_string,
+        "blog_login_required.views.blog_post_detail", name="blog_post_detail_date"),
+    url("^%s%s(?P&lt;slug&gt;.*)%s$" % _blog_format_string,
+        "blog_login_required.views.blog_post_detail", name="blog_post_detail"),
+
+You also need to define the _blog_format_string somewhere above your url patterns, it looks like this:
+
+    :::python
+
+    from mezzanine.conf import settings
+
+    BLOG_SLUG = settings.BLOG_SLUG.rstrip("/")
+    _blog_format_string = (
+        BLOG_SLUG,
+        "/" if settings.BLOG_SLUG else "",
+        "/" if settings.APPEND_SLASH else "",
+    )
+
+### 4. admin.py
+Finally, I monkey patched the Mezzanine admin to include login required. To 
+do this I added the following line to admin.py in `blog_login_required`.
+For this to work `blog_login_required` needs to appear before
+`mezzanine.blog` in `INSTALLED_APPS`.
+
+    :::python
+    BlogPostAdmin.fieldsets[0][1]["fields"].extend(["login_required"])
+
+
+### Credits
+[Help with putting migrations in an external app](http://dodgyville.tumblr.com/post/23028930440/new-fields-in-mezzanine-without-editing-or-creating-a)
+</summary></entry><entry><title>Form and formset in one html form</title><link href="http://bitofpixels.com/blog/form-and-formset-in-one-html-form/" rel="alternate"></link><updated>2013-06-13T21:18:37+00:00</updated><author><name>Josh Cartmell</name><uri>/blog/author/josh/</uri></author><id>http://bitofpixels.com/blog/form-and-formset-in-one-html-form/</id><summary type="html">I was recently working on a project that required combining a Django model
+and another model related to it via a ForeignKey in a single form.  At
+first I considered generating fields for the related model in the
+ModelForm's init, the more I thought about it though, the more I realized
+that would be messy, brittle and not easy to make changes to in the future.
+
+## The Solution
+
+Turns out you can put a formset and a ModelForm (or regular form) inside
+the same html form in a template and have them be validated individually.
+Each one only cares about the POST data relevant to them.  Something like:
+    
+    :::python
+    from django.forms.models import modelformset_factory
+    from django.shortcuts import render
+
+    from forms import FormClass
+    from models import RelatedModel
+
+
+    def handle_form_and_formset(request):
+        '''
+        Handles displaying, validating and saving a form and related
+        model formset
+        '''
+        form = FormClass()
+        RelatedFormset = modelformset_factory(RelatedModel, extra=5)
+        formset = RelatedFormset(queryset=RelatedModel.objects.none())
+        if request.method == "POST":
+            form = FormClass(request.POST)
+            formset = RelatedFormset(request.POST,
+                                     queryset=RelatedModel.objects.none())
+            if form.is_valid() and formset.is_valid():
+                # do something with the form data here
+                for f_form in formset:
+                    if f_form.is_valid() and f_form.has_changed():
+                        # do something with the formset data
+        return render(request, "some/template/name.html",
+                      {'form': form, 'formset': formset'})
+The corresponding template looks something like this:
+
+    &lt;form method="post"&gt;
+        {% csrf_token %}
+        {{ form.as_p }}
+        {% for f_form in formset %}
+            {{ f_form.as_p }}
+        {% endfor %}
+    &lt;/form&gt;
+
+That's it!  I didn't have to worry about form inits, or figuring out how to
+handle validation or anything like that, I just let the form do what it does
+best and the formset do what it does best. The astute reader may think this
+solution is obvious, but to me, it was a revelation.
+## Epilogue
+As you might have guessed, this isn't limited to ModelForm's and the
+formset's of related models.  This would work to combine any form and any
+formset (or even multiple forms and multiple formsets).
+
+## Gotchas
+It took me awhile to figure out this line:
+
+    if f_form.is_valid() and f_form.has_changed():
+Without adding the `f_form.has_changed()` I kept running into an error
+because I was trying to save one of the extras that had no data supplied.
+
+### credits:
+- [Issac Kelly on StackOverflow](http://stackoverflow.com/questions/6673341/django-combining-forms-for-related-models#comment-7892168)
+- [Tom Evans on Django-Users](http://groups.google.com/group/django-users/browse_thread/thread/57702248dd8d7f27)
+
+#### tags
+django, python, forms, formsets
+</summary></entry><entry><title>Unique on CharField when blank=True</title><link href="http://bitofpixels.com/blog/unique-on-charfield-when-blanktrue/" rel="alternate"></link><updated>2013-06-01T22:00:45+00:00</updated><author><name>Josh Cartmell</name><uri>/blog/author/josh/</uri></author><id>http://bitofpixels.com/blog/unique-on-charfield-when-blanktrue/</id><summary type="html">I recently ran into a situation where I wanted to make an EmailField unique.
+The problem was that the field had blank set to True so the field couldn't
+be unique because when testing uniqueness Django (and AFAIK the underlying
+databases) consider '' to match ''.  This is differnet than when you have
+null=True as well because django and the underlying database do not consider
+None and None to be a match when checking for uniqueness.
+
+After a bit of googling I found that I was not the first person to have this
+sort of trouble.
+
+## The Code
+
+### Custom Field
+    :::python
+    from django.db import models
+
+
+    class NullableEmailField(models.EmailField):
+        description = "EmailField that stores NULL but returns ''"
+        __metaclass__ = models.SubfieldBase
+        def to_python(self, value):
+            if isinstance(value, models.EmailField):
+                return value
+            return value or ''
+        def get_prep_value(self, value):
+            return value or None
+### Model Field Definition
+    :::python
+    email = NullableEmailField(_('e-mail address'), blank=True, null=True, default=None, unique=True)
+
+### Credits
+[mightyhal on Stackoverflow](http://stackoverflow.com/a/1934764/593283)</summary></entry></feed>

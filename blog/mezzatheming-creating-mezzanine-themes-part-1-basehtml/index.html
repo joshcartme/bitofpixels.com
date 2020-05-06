@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if (IE 7)&!(IEMobile)]><html class="no-js lt-ie9 lt-ie8" lang="en"><![endif]-->
+<!--[if (IE 8)&!(IEMobile)]><html class="no-js lt-ie9" lang="en"><![endif]-->
+<!--[if (IE 9)]><html class="no-js ie9" lang="en"><![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en-US"> <!--<![endif]-->
+
+<!-- Mirrored from bitofpixels.com/blog/mezzatheming-creating-mezzanine-themes-part-1-basehtml/ by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 05 May 2020 23:52:17 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="keywords" content="django, mezzanine, mezzanine theme">
+<meta name="description" content="This is the first part of a series of blog posts that describes the process that I use to create themes for Mezzanine. In this case you will be following along as I create the theme Lucid, which you can purchase on MEZZaTHEME. Lucid is based on the responsive Twitter Bootstrap template that you can find here. Keep in mind that there are many approaches that could be used to create a theme for Mezzanine and this is just one of them. If you see something that I could do better, notice a bug, or have anything else to say, sound off in the comments below!">
+<title>MEZZaTHEMing (creating Mezzanine themes) Part 1: base.html | Bit of Pixels</title>
+<link rel="alternate" type="application/rss+xml" title="RSS" href="../feeds/rss/index.html">
+<link rel="alternate" type="application/atom+xml" title="Atom" href="../feeds/atom/index.html">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="HandheldFriendly" content="true" />
+<meta name="MobileOptimized" content="320" />
+
+<!--[if IEMobile]>  <meta http-equiv="cleartype" content="on">  <![endif]-->
+<link rel="stylesheet" href="../../static/CACHE/css/4d40634b3931.css" type="text/css" />
+
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,300,300italic,400italic,600,600italic,700,700italic,800,800italic" rel='stylesheet' type='text/css'>
+
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../static/ico/apple-touch-icon-144-precomposed3860.png?v=1">
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="../../static/ico/apple-touch-icon-114-precomposed3860.png?v=1">
+<link rel="apple-touch-icon-precomposed" sizes="72x72" href="../../static/ico/apple-touch-icon-72-precomposed3860.png?v=1">
+<link rel="apple-touch-icon-precomposed" href="../../static/ico/apple-touch-icon-57-precomposed3860.png?v=1">
+<link rel="shortcut icon" href="../../static/ico/favicon5e1f.png?v=2">
+<link rel="apple-touch-icon" href="#">
+<link rel="apple-touch-icon" sizes="114x114" href="#">
+<link rel="apple-touch-icon" sizes="72x72" href="#">
+<link rel="apple-touch-icon" sizes="144x144" href="#">
+<script type="text/javascript" src="../../static/CACHE/js/4e8fecc2c196.js"></script>
+</head>
+<body id="body">
+
+<header>
+<div class="container">
+<div class="row">
+<div class="span2">
+<div id="logo">
+<a href="../../index.html" title="Bit of Pixels"><span class="logo-red">b</span><span class="logo-blue">P</span><span class="logo-green">x</span></a>
+</div>
+</div>
+<div class="span10">
+
+<a id="mobile-nav" class="menu-nav" href="#menu-nav"><span class="menu-icon"></span></a>
+
+<nav id="menu">
+<ul id="menu-nav"><li class="" id="dropdown-menu-home"><a href="../../index.html">Home</a></li><li class="dropdown active" id="dropdown-menu-blog"><a href="../index.html">
+Blog
+</a></li><li class="dropdown" id="dropdown-menu-portfolio"><a href="../../portfolio/index.html">
+Portfolio
+</a></li></ul>
+</nav>
+</div>
+</div>
+</div>
+</header>
+
+<section id="image-static">
+<div class="fullimage-container">
+<div class="pattern"></div>
+<img src="../../static/media/uploads/blog/.thumbnails/fraol-1500x0.jpg">
+</div>
+</section>
+
+<section id="intro-box" class="single-post">
+<div class="container">
+<div class="row">
+<div class="span12">
+<h2 class="entry-title">MEZZaTHEMing (creating Mezzanine themes) Part 1: base.html</h2>
+<div class="entry-meta">
+<span class="author">By Josh Cartmell</span>
+<span class="divider">/</span>
+<span class="published">6 years, 7 months ago</span>
+<span class="divider">/</span>
+<a href="index.html#disqus_thread" data-disqus-identifier="BlogPost-7">Comments</a>
+</div>
+<span class="arrow"></span>
+</div>
+</div>
+</div>
+</section>
+
+<div id="content">
+
+<section id="blog" class="container single-post">
+<div class="row">
+<div class="span9">
+
+<article class="post">
+<div class="entry-content">
+<p>This is the first part of a series of blog posts that describes the process that I use to create themes for Mezzanine. In this case you will be following along as I create the theme <a href="https://mezzathe.me/theme/lucid/">Lucid</a>, which you can purchase on <a href="http://mezzathe.me/">MEZZaTHEME</a>. Lucid is based on the responsive Twitter Bootstrap template that you can find <a href="http://www.templatescreme.com/free-website-jessica-white-free-bootstrap-website">here</a>. Keep in mind that there are many approaches that could be used to create a theme for Mezzanine and this is just one of them. If you see something that I could do better, notice a bug, or have anything else to say, sound off in the comments below!</p>
+<p>This post will focus on how I start out: modifying base.html. Since every Mezzanine template inherits from base.html, the base.html design and layout dictate much of the design and layout of your site. For this reason I always start working with base.html first.</p>
+<h2>Getting Started</h2>
+<ol>
+<li>
+<p>Create a new Mezzanine project and a Django app that will hold static assets and ultimately be the theme:</p>
+<div class="codehilite"><pre><span class="nv">$ </span>mezzanine-project lucid
+<span class="nv">$ </span><span class="nb">cd </span>lucid
+<span class="nv">$ </span>python manage.py startapp theme
+<span class="nv">$ </span>mkdir theme/static
+<span class="nv">$ </span>python manage.py createdb --noinput
+</pre></div>
+</li>
+<li>
+<p>Next copy the static files (css, js, images) from the downloaded template to the theme's static directory.</p>
+</li>
+<li>
+<p>Add <code>"theme",</code> to the <code>INSTALLED_APPS</code> setting in settings.py. It should go above any Mezzanine apps so that theme's templates override Mezzanine's defaults.</p>
+</li>
+</ol>
+<p>Run the server and check your site in a browser to make sure everything is working correctly:</p>
+<div class="codehilite"><pre><span class="nv">$ </span>python manage.py runserver
+</pre></div>
+<h2>Base.html</h2>
+<ol>
+<li>
+<p>Copy Mezzanine's base.html template to your theme directory:</p>
+<div class="codehilite"><pre><span class="nv">$ </span>python manage.py collecttemplates -t base.html
+<span class="nv">$ </span>mv templates/ theme/
+</pre></div>
+</li>
+<li>
+<p>Open the newly copied base.html and the index.html file from the template we are working with. Copy the css, javascript and any other additional items (for example Google fonts in this case) from the head of index.html to the head of the theme's base.html. (In this case the javascripts are in the footer but I will be moving them to the head).</p>
+</li>
+</ol>
+<blockquote>
+<p>Be careful to leave any template code intact. For example deleting
+<code>{% block meta_title %}{% endblock %}</code> would prevent the <code>&lt;title&gt;</code> tag
+from being set properly. I also usually rename the bootstrap files to
+include their version. So in this case I renamed <code>bootstrap.css</code> and
+<code>bootstrap-responsive.css</code> to <code>bootstrap.2.2.1.css</code> and
+<code>bootstrap-responsive.2.2.1.css</code>. This prevents a the wrong version
+of bootstrap from being loaded (from mezzanine or any other app you
+may have installed).</p>
+</blockquote>
+<p>At this point the head section of my base.html looks like this:</p>
+<div class="codehilite"><pre><span class="nt">&lt;head&gt;</span>
+
+    <span class="nt">&lt;meta</span> <span class="na">http-equiv=</span><span class="s">"Content-type"</span> <span class="na">content=</span><span class="s">"text/html; charset=utf-8"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">"viewport"</span> <span class="na">content=</span><span class="s">"width=device-width"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">"keywords"</span> <span class="na">content=</span><span class="s">"{% block meta_keywords %}{% endblock %}"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">"description"</span> <span class="na">content=</span><span class="s">"{% block meta_description %}{% endblock %}"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;title&gt;</span>{% block meta_title %}{% endblock %}{% if settings.SITE_TITLE %} | {{ settings.SITE_TITLE }}{% endif %}<span class="nt">&lt;/title&gt;</span>
+    <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"shortcut icon"</span> <span class="na">href=</span><span class="s">"{% static "</span><span class="na">img</span><span class="err">/</span><span class="na">favicon</span><span class="err">.</span><span class="na">ico</span><span class="err">"</span> <span class="err">%}"</span><span class="nt">&gt;</span>
+
+    {% ifinstalled mezzanine.blog %}
+    <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"alternate"</span> <span class="na">type=</span><span class="s">"application/rss+xml"</span> <span class="na">title=</span><span class="s">"RSS"</span> <span class="na">href=</span><span class="s">"{% url "</span><span class="na">blog_post_feed</span><span class="err">"</span> <span class="err">"</span><span class="na">rss</span><span class="err">"</span> <span class="err">%}"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"alternate"</span> <span class="na">type=</span><span class="s">"application/atom+xml"</span> <span class="na">title=</span><span class="s">"Atom"</span> <span class="na">href=</span><span class="s">"{% url "</span><span class="na">blog_post_feed</span><span class="err">"</span> <span class="err">"</span><span class="na">atom</span><span class="err">"</span> <span class="err">%}"</span><span class="nt">&gt;</span>
+    {% endifinstalled %}
+
+    <span class="nt">&lt;link</span> <span class="na">href=</span><span class="s">'//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800'</span> <span class="na">rel=</span><span class="s">'stylesheet'</span> <span class="na">type=</span><span class="s">'text/css'</span><span class="nt">&gt;</span>
+
+    {% compress css %}
+    <span class="nt">&lt;link</span> <span class="na">href=</span><span class="s">"css/prettyPhoto.css"</span> <span class="na">rel=</span><span class="s">"stylesheet"</span> <span class="na">type=</span><span class="s">"text/css"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"stylesheet"</span> <span class="na">id=</span><span class="s">"camera-css"</span>  <span class="na">href=</span><span class="s">"css/camera.css"</span> <span class="na">type=</span><span class="s">"text/css"</span> <span class="na">media=</span><span class="s">"all"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;link</span> <span class="na">href=</span><span class="s">"css/bootstrap.2.2.1.css"</span> <span class="na">rel=</span><span class="s">"stylesheet"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;link</span> <span class="na">href=</span><span class="s">"css/theme.css"</span> <span class="na">rel=</span><span class="s">"stylesheet"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"stylesheet"</span> <span class="na">type=</span><span class="s">"text/css"</span> <span class="na">href=</span><span class="s">"css/skins/tango/skin.css"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;link</span> <span class="na">href=</span><span class="s">"css/bootstrap-responsive.2.2.1.css"</span> <span class="na">rel=</span><span class="s">"stylesheet"</span><span class="nt">&gt;</span>
+    {% block extra_css %}{% endblock %}
+    {% endcompress %}
+
+    <span class="c">&lt;!--[if lt IE 9]&gt;</span>
+<span class="c">        &lt;script src="http://html5shim.googlecode.com/svn/trunk/html5.js"&gt;&lt;/script&gt;</span>
+<span class="c">    &lt;![endif]--&gt;</span>
+
+    {% compress js %}
+    <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"{% static "</span><span class="na">mezzanine</span><span class="err">/</span><span class="na">js</span><span class="err">/"|</span><span class="na">add:settings</span><span class="err">.</span><span class="na">JQUERY_FILENAME</span> <span class="err">%}"</span><span class="nt">&gt;&lt;/script&gt;</span>
+    <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span> <span class="na">src=</span><span class="s">"js/jquery.easing.1.3.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+    <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span> <span class="na">src=</span><span class="s">"js/jquery.mobile.customized.min.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+    <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span> <span class="na">src=</span><span class="s">"js/camera.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+    <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"js/bootstrap.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+    <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"js/superfish.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+    <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span> <span class="na">src=</span><span class="s">"js/jquery.prettyPhoto.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+    <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span> <span class="na">src=</span><span class="s">"js/jquery.jcarousel.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+    <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span> <span class="na">src=</span><span class="s">"js/jquery.tweet.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+    <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span> <span class="na">src=</span><span class="s">"js/myscript.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+    <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span><span class="nt">&gt;</span>
+        <span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">ready</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>   
+            <span class="c1">//Slider</span>
+            <span class="nx">$</span><span class="p">(</span><span class="s1">'#camera_wrap_1'</span><span class="p">).</span><span class="nx">camera</span><span class="p">();</span>
+
+            <span class="c1">//Featured works &amp; latest posts</span>
+            <span class="nx">$</span><span class="p">(</span><span class="s1">'#mycarousel, #mycarousel2, #newscarousel'</span><span class="p">).</span><span class="nx">jcarousel</span><span class="p">();</span>                                                  
+        <span class="p">});</span>     
+    <span class="nt">&lt;/script&gt;</span>
+    {% block extra_js %}{% endblock %}
+    {% endcompress %}
+
+    {% block extra_head %}{% endblock %}
+
+<span class="nt">&lt;/head&gt;</span>
+</pre></div>
+<h3>Updating static asset locations</h3>
+<p>The only outstanding problem with our static assets is that the css and javascript refer to locations that don't exist. To remedy this I use find and replace to add in the static template tag. For example I find <strong>href="css</strong> and mass replace with <strong>href="{% static "css</strong>; then I find <strong>.css"</strong> and replace it with <strong>.css" %}"</strong>. I do the same thing with javascript and now all the css and javascript should be properly linked. Any resources that refer to an outside domain may need to be fixed. For example, if you end up with:</p>
+<div class="codehilite"><pre><span class="c">&lt;!--[if lt IE 9]&gt;</span>
+<span class="c">    &lt;script src="http://html5shim.googlecode.com/svn/trunk/html5.js" %}"&gt;&lt;/script&gt;</span>
+<span class="c">&lt;![endif]--&gt;</span>
+</pre></div>
+<p>Get rid of the %}"</p>
+<h3>Setting up the &lt;body&gt;</h3>
+<p>Finally copy everything from the <code>&lt;body&gt;</code> of the template's index.html and paste it to the body of your theme's base.html replacing everything except <code>{% include "includes/footer_scripts.html" %}</code> at the end. Using some find and replace magic again update the src of all images to properly use the static template tag. Run the dev server again and check the site in a browser: it should look exactly the same as opening the template's index.html in browser. If it doesn't, go back and double check everything. I always start with making sure that all the css files are loading properly. For example, as I was creating this tutorial, I had <code>&lt;link href="{% static "css/bootstrap.2.2.1.css" %}" rel="stylesheet"&gt;</code> in the head of base.html but hadn't actually renamed the corresponding file; this caused the page to not load.</p>
+<p>If you tried to go to any other page you would see the exact same thing since we blew out all the blocks when we copied everything over to the body of base.html. This is to be expected and we will add back block_tags later. Now that we have a skeleton of the site up it's time to begin getting content to be driven by Mezzanine.</p>
+<h4>The Header</h4>
+<p>The page header (including the logo, menu and social media icons) will be present across most if not all of you Mezzanine project. Starting with the opening body tag I begin working my way down through my base.html.</p>
+<p>First up, I change the logo to point to "/" instead of "index.html". This would also be a good time to update the logo. I replaced the image with <code>{{ settings.SITE_TITLE }}</code>, increased the font size and gave it the same line height as the row it is in--but you can do whatever you want.</p>
+<p>Moving down I see a ul that contains links to social networks. To make this easy to manage I add a defaults.py to the theme app and corresponding settings; these settings will then be editable in the admin interface of the site, e.g.:</p>
+<div class="codehilite"><pre><span class="n">register_setting</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s">"SOCIAL_LINK_FACEBOOK"</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">"Facebook link"</span><span class="p">),</span>
+    <span class="n">description</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">"If present a Facebook icon linking here will be in the "</span>
+        <span class="s">"header."</span><span class="p">),</span>
+    <span class="n">editable</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="s">"https://facebook.com/mezzatheme"</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+<p>I add each of the setting to <code>TEMPLATE_ACCESSIBLE_SETTINGS</code> and then I update each of the list elements to look like this:</p>
+<div class="codehilite"><pre>{% if settings.SOCIAL_LINK_FACEBOOK %}<span class="nt">&lt;li&gt;</span>
+    <span class="nt">&lt;a</span> <span class="na">target=</span><span class="s">"_blank"</span> <span class="na">href=</span><span class="s">"{{ settings.SOCIAL_LINK_FACEBOOK }}"</span> <span class="na">class=</span><span class="s">"facebook"</span><span class="nt">&gt;</span>Facebook<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;/li&gt;</span>{% endif %}
+</pre></div>
+<p>Next I come to the dropdown menu. First I copy the <code>pages/menus/dropdown.html</code> to my theme:</p>
+<div class="codehilite"><pre><span class="nv">$ </span>python manage.py collecttemplates -t pages/menus/dropdown.html
+<span class="nv">$ </span>mv templates/pages/ theme/templates/
+</pre></div>
+<p>After making a few minor changes to dropdown.html I replaced the whole menu ul in base.html with:</p>
+<div class="codehilite"><pre>{% page_menu "pages/menus/dropdown.html" %}
+</pre></div>
+<p>The menu is now driven by Mezzanine. I will leave the actual changes that were made as an exercise for the reader but it was a very small amount of changes (less than I can count on my fingers; don't worry, I don't have eleven fingers or anything like that).</p>
+<p>After setting up the dropdown menu the header is finished. All of the content after the end of the header and before the footer is specific to the home page so I skip over it for now and move onto the footer.</p>
+<h4>The Footer</h4>
+<p>Along with the header, the footer will also be present across most--if not all--of your Mezzanine project. I use the same approach as I used with the header, starting at the top and working my way down.</p>
+<p>The first item I come across is what would have been a javascript Twitter widget. Since Twitter got rid of their open API that was easy to access with javscript this widget will not work. I'll replace it with one of Twitter's widgets which can be created <a href="https://twitter.com/settings/widgets">here</a>. I also remove tweet.js from the javscripts in the head and open myscript.js and remove any code that was related to the old Twitter widget.</p>
+<p>Continuing on there is a contact form and a testimonials box. To simplify things a bit I will replace both of these with a box that contains the content of <code>settings.SITE_TAGLINE</code>. To accommodate the change in the number of items in the footer I update each of the footer boxes to be span4s instead of span3s.</p>
+<p>The last item in the footer widgets is a Flickr widget that pulls in the most recent photos from a Flickr account. Currently the id of this account is hard coded into myscript.js. To make this dynamic I create a setting in the earlier created defaults.py to be the Flickr id that photos are retrieved from. I then pull the Flickr code out of myscript.js and add it to a jquery document ready function directly in the head of base.html. I replace the id with <code>{{ settings.FLICKR_ID }}</code> and the flickr widget is now dynamically controlled.</p>
+<p>Next is more standard footer items (logo, copyright notice, another menu, etc..,). I replace the logo with the SITE_TITLE again (also updating the link location) and style it as necessary. I update the copyright notice to display the current year and the correct site name. I update the search box's action to point to <code>{% url 'search' %}</code>, make its method <code>get</code> and change the text input's name to q (since this is what Mezzanine expects).</p>
+<p>Next are more social media icons which I handle the same way as I did in the header.</p>
+<p>Last of all is another menu, I create a menu template to handle it and insert a call to <code>page_menu</code> into base.html in place of it. Now that all of the menus have been created, I open up the project's settings.py and update <code>PAGE_MENU_TEMPLATES</code> to reflect the menus that are present. It ends up looking like this:</p>
+<div class="codehilite"><pre>PAGE_MENU_TEMPLATES = (
+    (1, "Top navigation bar", "pages/menus/dropdown.html"),
+    (2, "Footer", "pages/menus/flat_footer.html"),
+)
+</pre></div>
+<h2>Final Thoughts</h2>
+<p>That's it for base.html. Your Mezzanine project has a header and footer that will be present throughout your site.The skeleton of your site is coming together and you are ready to move on! Stay tuned for the next blog post in this series.</p>
+</div>
+<div class="entry-meta entry-footer">
+<span class="related-tags">
+Related posts:
+<a href="../mezzatheming-part-4-style-the-blog-and-beyond/index.html">MEZZaTHEMing Part 4: To the blog, and beyond</a>,
+<a href="../mezzatheming-part-3-pages-extra-dry/index.html">MEZZaTHEMing Part 3: Pages, extra DRY</a>,
+<a href="../mezzatheming-part-2-the-homepage/index.html">MEZZaTHEMing Part 2: The HomePage</a>
+<span class="divider">/</span>
+</span>
+<span class="entry-tags">
+Tagged:
+<a href="../tag/django/index.html">django</a>,
+<a href="../tag/mezzanine/index.html">mezzanine</a>,
+<a href="../tag/mezzanine-theme/index.html">mezzanine theme</a>
+</span>
+</div>
+<div class="separator"></div>
+</article>
+
+<script>
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'bitofpixels'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function () {
+    var s = document.createElement('script'); s.async = true;
+    s.type = 'text/javascript';
+    s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+    (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+}());
+</script>
+<div id="comments">
+<h3>Comments</h3>
+<div id="disqus_thread"></div>
+<script>
+var disqus_config = function () {
+    this.page.remote_auth_s3 = '';
+    this.page.api_key = '';
+}
+</script>
+<script>
+    var disqus_developer = 'False' == 'True';
+    var disqus_url = 'index.html';
+    var disqus_title = 'MEZZaTHEMing%20(creating%20Mezzanine%20themes)%20Part%201_%20base.html/index.html';
+    var disqus_identifier = 'BlogPost-7';
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = '../../../bitofpixels.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+</div>
+</div>
+
+<div class="span3">
+<aside id="sidebar">
+<div id="search" class="widget widget-search">
+<form method="get" id="searchform" action="#">
+<input type="text" placeholder="To search type and hit enter..." value="" />
+</form>
+</div>
+<div class="widget blog-sidebar">
+<h3>Recent Posts</h3>
+<ul class="unstyled recent-posts">
+<li><a href="../upgrading-to-mezzanine-4/index.html">Upgrading to Mezzanine 4</a></li>
+<li><a href="../collecting-additional-information-on-a-per-product-basis-in-cartridge/index.html">Collecting additional information on a per product basis in Cartridge</a></li>
+<li><a href="../deploying-mezzanine-to-digital-ocean-using-the-included-fabfile/index.html">Deploying Mezzanine to Digital Ocean using the included fabfile</a></li>
+<li><a href="../on-singletonadmins-and-sitewidecontent-editing-sitewide-content-in-mezzanines-admin/index.html">On SingletonAdmins and SitewideContent (editing sitewide content in Mezzanine&#39;s admin)</a></li>
+<li><a href="../mezzatheming-part-4-style-the-blog-and-beyond/index.html">MEZZaTHEMing Part 4: To the blog, and beyond</a></li>
+</ul>
+<h3>Archive</h3>
+<h6>2015</h6><ul class="unstyled">
+<li><a href="../archive/2015/7/index.html">July</a> (1)</li>
+</ul>
+<h6>2014</h6><ul class="unstyled">
+<li><a href="../archive/2014/5/index.html">May</a> (1)</li>
+<li><a href="../archive/2014/4/index.html">April</a> (1)</li>
+</ul>
+<h6>2013</h6><ul class="unstyled">
+<li><a href="../archive/2013/9/index.html">September</a> (5)</li>
+<li><a href="../archive/2013/8/index.html">August</a> (1)</li>
+<li><a href="../archive/2013/7/index.html">July</a> (2)</li>
+<li><a href="../archive/2013/6/index.html">June</a> (3)</li>
+</ul>
+<h3>Tags</h3>
+<ul class="unstyled tags">
+<li>
+<a href="../tag/mezzanine/index.html" class="tag-weight-4">mezzanine</a>
+(10)
+</li>
+<li>
+<a href="../tag/django/index.html" class="tag-weight-4">django</a>
+(12)
+</li>
+<li>
+<a href="../tag/mezzanine-theme/index.html" class="tag-weight-1">mezzanine theme</a>
+(4)
+</li>
+</ul>
+<h3>Authors</h3>
+<ul class="unstyled">
+<li><a href="../author/josh/index.html">Josh Cartmell</a>
+(14)</li>
+</ul>
+<h3>Feeds</h3>
+<a href="../feeds/rss/index.html">RSS</a> /
+<a href="../feeds/atom/index.html">Atom</a>
+</div>
+<div class="widget widget-social">
+<h3 class="widget-title">Elsewhere</h3>
+<ul>
+<li><a href="https://www.flickr.com/photos/joshcartmell"><i class="font-icon-social-flickr"></i></a></li>
+<li><a href="https://github.com/joshcartme"><i class="font-icon-social-github"></i></a></li>
+<li><a href="https://twitter.com/joshcartme"><i class="font-icon-social-twitter"></i></a></li>
+</ul>
+</div>
+</aside>
+</div>
+
+</div>
+</section>
+</div>
+
+<footer>
+<div class="container">
+<div class="row">
+<nav id="social-footer">
+<ul>
+<li><a href="https://twitter.com/joshcartme" title=""><i class="font-icon-social-twitter"></i></a></li>
+</ul>
+</nav>
+</div>
+</div>
+</footer>
+
+
+<section id="footer-credits">
+<div class="container">
+<div class="row">
+<div class="span12">
+<p class="credits">&copy; 2020 <a target="_blank" href="https://joshc.io/">Josh Cartmell</a>. All rights reserved.</p>
+</div>
+</div>
+</div>
+</section>
+
+
+<a id="back-to-top" href="#">
+<i class="font-icon-arrow-simple-up"></i>
+</a>
+
+<script>
+
+var _gaq = _gaq || [['_trackPageview']];
+_gaq.unshift(['_setAccount', 'UA-31556206-1']);
+(function(d, t) {
+    var g = d.createElement(t),
+        s = d.getElementsByTagName(t)[0];
+    g.async = true;
+    g.src = '../../../www.google-analytics.com/ga.js';
+    s.parentNode.insertBefore(g, s);
+})(document, 'script');
+
+</script>
+</body>
+
+<!-- Mirrored from bitofpixels.com/blog/mezzatheming-creating-mezzanine-themes-part-1-basehtml/ by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 05 May 2020 23:52:41 GMT -->
+</html>

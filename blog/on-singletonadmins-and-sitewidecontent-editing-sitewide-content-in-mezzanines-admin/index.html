@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if (IE 7)&!(IEMobile)]><html class="no-js lt-ie9 lt-ie8" lang="en"><![endif]-->
+<!--[if (IE 8)&!(IEMobile)]><html class="no-js lt-ie9" lang="en"><![endif]-->
+<!--[if (IE 9)]><html class="no-js ie9" lang="en"><![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en-US"> <!--<![endif]-->
+
+<!-- Mirrored from bitofpixels.com/blog/on-singletonadmins-and-sitewidecontent-editing-sitewide-content-in-mezzanines-admin/ by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 05 May 2020 23:51:51 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="keywords" content="django, mezzanine">
+<meta name="description" content="The problemRecently while working on developing a Mezzanine powered site I was asked to make it possible to edit the footer in the Mezzanine admin. In this case the footer contained a block of text that was contact info and two blocks that were links, some within the site, some external. In the past I&#39;ve created a ContentBlock model that is just a title and RichTextField. I then have created an accompanying templatetag that looks content blocks up by title and displays the associated content field. That approach works but it&#39;s brittle because if someone changes the title of a content block it will no longer be displayed. It also results in extra overhead because displaying three sections would require three database calls. This time around I thought about the problem some more, and came up with a superior solution which makes use of Mezzanine&#39;s SingletonAdmin class.">
+<title>On SingletonAdmins and SitewideContent (editing sitewide content in Mezzanine&#39;s admin) | Bit of Pixels</title>
+<link rel="alternate" type="application/rss+xml" title="RSS" href="../feeds/rss/index.html">
+<link rel="alternate" type="application/atom+xml" title="Atom" href="../feeds/atom/index.html">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="HandheldFriendly" content="true" />
+<meta name="MobileOptimized" content="320" />
+
+<!--[if IEMobile]>  <meta http-equiv="cleartype" content="on">  <![endif]-->
+<link rel="stylesheet" href="../../static/CACHE/css/4d40634b3931.css" type="text/css" />
+
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,300,300italic,400italic,600,600italic,700,700italic,800,800italic" rel='stylesheet' type='text/css'>
+
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../static/ico/apple-touch-icon-144-precomposed3860.png?v=1">
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="../../static/ico/apple-touch-icon-114-precomposed3860.png?v=1">
+<link rel="apple-touch-icon-precomposed" sizes="72x72" href="../../static/ico/apple-touch-icon-72-precomposed3860.png?v=1">
+<link rel="apple-touch-icon-precomposed" href="../../static/ico/apple-touch-icon-57-precomposed3860.png?v=1">
+<link rel="shortcut icon" href="../../static/ico/favicon5e1f.png?v=2">
+<link rel="apple-touch-icon" href="#">
+<link rel="apple-touch-icon" sizes="114x114" href="#">
+<link rel="apple-touch-icon" sizes="72x72" href="#">
+<link rel="apple-touch-icon" sizes="144x144" href="#">
+<script type="text/javascript" src="../../static/CACHE/js/4e8fecc2c196.js"></script>
+</head>
+<body id="body">
+
+<header>
+<div class="container">
+<div class="row">
+<div class="span2">
+<div id="logo">
+<a href="../../index.html" title="Bit of Pixels"><span class="logo-red">b</span><span class="logo-blue">P</span><span class="logo-green">x</span></a>
+</div>
+</div>
+<div class="span10">
+
+<a id="mobile-nav" class="menu-nav" href="#menu-nav"><span class="menu-icon"></span></a>
+
+<nav id="menu">
+<ul id="menu-nav"><li class="" id="dropdown-menu-home"><a href="../../index.html">Home</a></li><li class="dropdown active" id="dropdown-menu-blog"><a href="../index.html">
+Blog
+</a></li><li class="dropdown" id="dropdown-menu-portfolio"><a href="../../portfolio/index.html">
+Portfolio
+</a></li></ul>
+</nav>
+</div>
+</div>
+</div>
+</header>
+
+<section id="image-static">
+<div class="fullimage-container">
+<div class="pattern"></div>
+<img src="../../static/media/uploads/blog/.thumbnails/pool-1500x0.jpg">
+</div>
+</section>
+
+<section id="intro-box" class="single-post">
+<div class="container">
+<div class="row">
+<div class="span12">
+<h2 class="entry-title">On SingletonAdmins and SitewideContent (editing sitewide content in Mezzanine&#39;s admin)</h2>
+<div class="entry-meta">
+<span class="author">By Josh Cartmell</span>
+<span class="divider">/</span>
+<span class="published">6 years, 7 months ago</span>
+<span class="divider">/</span>
+<a href="index.html#disqus_thread" data-disqus-identifier="BlogPost-11">Comments</a>
+</div>
+<span class="arrow"></span>
+</div>
+</div>
+</div>
+</section>
+
+<div id="content">
+
+<section id="blog" class="container single-post">
+<div class="row">
+<div class="span9">
+
+<article class="post">
+<div class="entry-content">
+<h2>The problem</h2>
+<p>Recently while working on developing a Mezzanine powered site I was asked to make it possible to edit the footer in the Mezzanine admin. In this case the footer contained a block of text that was contact info and two blocks that were links, some within the site, some external. In the past I've created a <code>ContentBlock</code> model that is just a title and <code>RichTextField</code>. I then have created an accompanying templatetag that looks content blocks up by title and displays the associated content field. That approach works but it's brittle because if someone changes the title of a content block it will no longer be displayed. It also results in extra overhead because displaying three sections would require three database calls. This time around I thought about the problem some more, and came up with a superior solution which makes use of Mezzanine's <code>SingletonAdmin</code> class.</p>
+<p>For the purpose of this article assume that you are in a similar situation and have a footer that contains three content blocks which you would like editable via the admin. The techniques described could easily be extended to accommodate whatever site-wide content you would like to be editable in Mezzanine's admin.</p>
+<h2>The models</h2>
+<div class="codehilite"><pre><span class="k">class</span> <span class="nc">SitewideContent</span><span class="p">(</span><span class="n">SiteRelated</span><span class="p">):</span>
+    <span class="n">box_one_title</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">"Contact us"</span><span class="p">)</span>
+    <span class="n">box_one_content</span> <span class="o">=</span> <span class="n">RichTextField</span><span class="p">()</span>
+    <span class="n">box_two_title</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">"Sites we like"</span><span class="p">)</span>
+    <span class="n">box_two_content</span> <span class="o">=</span> <span class="n">RichTextField</span><span class="p">()</span>
+    <span class="n">box_three_title</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">"Highlighted pages"</span><span class="p">)</span>
+    <span class="n">box_three_content</span> <span class="o">=</span> <span class="n">RichTextField</span><span class="p">()</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">'Sitewide Content'</span><span class="p">)</span>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">'Sitewide Content'</span><span class="p">)</span>
+</pre></div>
+<blockquote>
+<p>You may find it odd that I include a title field associated with each
+content field. While admin's could easily add a heading at the
+beginning of each content field I find it useful to force the title,
+constraining admin users slightly and enforcing consistency. In any
+case it's a subjective choice and you can do whatever suits your
+situation.</p>
+</blockquote>
+<h2>The admin</h2>
+<p>Next I get the SitewideContent model to show in the admin. There should only be one instance of SitewideContent on a site so I make use of Mezzanine's <code>SingletonAdmin</code>. Mezzanine's <code>SingletonAdmin</code> makes it so that you are never shown the add object screen for a model and are instead redirected to the add form or if an object already exists, redirected to it's change form. This means that there will only ever be a single instance of the model in the databse. The admin.py looks like this:</p>
+<div class="codehilite"><pre><span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">admin</span>
+
+<span class="kn">from</span> <span class="nn">mezzanine.core.admin</span> <span class="kn">import</span> <span class="n">SingletonAdmin</span>
+
+<span class="kn">from</span> <span class="nn">models</span> <span class="kn">import</span> <span class="n">SitewideContent</span>
+
+
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">SitewideContent</span><span class="p">,</span> <span class="n">SingletonAdmin</span><span class="p">)</span>
+</pre></div>
+<p>I also modify <code>ADMIN_MENU_ORDER</code> in settings.py to get <code>SitewideContent</code> to show in the Content dropdown in the admin, it looks like this (you will need to replace some_app_name with the name of the app that has the SitewideContent model):</p>
+<div class="codehilite"><pre><span class="n">ADMIN_MENU_ORDER</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="s">"Content"</span><span class="p">,</span> <span class="p">(</span><span class="s">"pages.Page"</span><span class="p">,</span> <span class="s">"blog.BlogPost"</span><span class="p">,</span> <span class="s">"some_app_name.SitewideContent"</span><span class="p">,</span>
+       <span class="s">"generic.ThreadedComment"</span><span class="p">,</span> <span class="p">(</span><span class="s">"Media Library"</span><span class="p">,</span> <span class="s">"fb_browse"</span><span class="p">),)),</span>
+    <span class="p">(</span><span class="s">"Site"</span><span class="p">,</span> <span class="p">(</span><span class="s">"sites.Site"</span><span class="p">,</span> <span class="s">"redirects.Redirect"</span><span class="p">,</span> <span class="s">"conf.Setting"</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s">"Users"</span><span class="p">,</span> <span class="p">(</span><span class="s">"auth.User"</span><span class="p">,</span> <span class="s">"auth.Group"</span><span class="p">,)),</span>
+<span class="p">)</span>
+</pre></div>
+<h2>Display</h2>
+<p>The final piece of this puzzle is getting this content to show in the footer (or wherever). There are various approaches that could be used (middleware maybe, a context processor, etc...); I ended up creating a tempalettag like so:</p>
+<div class="codehilite"><pre><span class="kn">from</span> <span class="nn">mezzanine</span> <span class="kn">import</span> <span class="n">template</span>
+<span class="kn">from</span> <span class="nn">mezzanine.utils.sites</span> <span class="kn">import</span> <span class="n">current_site_id</span>
+
+<span class="kn">from</span> <span class="nn">some_app_name.models</span> <span class="kn">import</span> <span class="n">SitewideContent</span>
+
+<span class="n">register</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">Library</span><span class="p">()</span>
+
+
+<span class="nd">@register.as_tag</span>
+<span class="k">def</span> <span class="nf">get_sitewide_content</span><span class="p">():</span>
+    <span class="sd">"""</span>
+<span class="sd">    Adds the `SitewideContent` to the context</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">SitewideContent</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">site_id</span><span class="o">=</span><span class="n">current_site_id</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+<p>and then finally in base.html I use the templatetag:</p>
+<div class="codehilite"><pre><span class="cp">{%</span> <span class="k">get_sitewide_content</span> <span class="k">as</span> <span class="nv">sitewide</span> <span class="cp">%}</span><span class="x"></span>
+<span class="cp">{%</span> <span class="k">if</span> <span class="nv">sitewide</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">&lt;footer id="footer"&gt;</span>
+<span class="x">    &lt;div class="container"&gt;</span>
+<span class="x">        &lt;div class="row-fluid"&gt;</span>
+<span class="x">            &lt;div class="span4"&gt;</span>
+<span class="x">                </span><span class="cp">{%</span> <span class="k">editable</span> <span class="nv">sitewide.box_one_title</span> <span class="nv">sitewide.box_one_content</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">                &lt;h4&gt;</span><span class="cp">{{</span> <span class="nv">sitewide.box_one_title</span> <span class="cp">}}</span><span class="x">&lt;/h4&gt;</span>
+<span class="x">                </span><span class="cp">{{</span> <span class="nv">sitewide.box_one_content</span><span class="o">|</span><span class="nf">richtext_filters</span><span class="o">|</span><span class="nf">safe</span> <span class="cp">}}</span><span class="x"></span>
+<span class="x">                </span><span class="cp">{%</span> <span class="k">endeditable</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            &lt;/div&gt;</span>
+
+<span class="x">            &lt;div class="span4"&gt;</span>
+<span class="x">                </span><span class="cp">{%</span> <span class="k">editable</span> <span class="nv">sitewide.box_two_title</span> <span class="nv">sitewide.box_two_content</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">                &lt;h4&gt;</span><span class="cp">{{</span> <span class="nv">sitewide.box_two_title</span> <span class="cp">}}</span><span class="x">&lt;/h4&gt;</span>
+<span class="x">                </span><span class="cp">{{</span> <span class="nv">sitewide.box_two_content</span><span class="o">|</span><span class="nf">richtext_filters</span><span class="o">|</span><span class="nf">safe</span> <span class="cp">}}</span><span class="x"></span>
+<span class="x">                </span><span class="cp">{%</span> <span class="k">endeditable</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            &lt;/div&gt;</span>
+
+<span class="x">            &lt;div class="span4"&gt;</span>
+<span class="x">                </span><span class="cp">{%</span> <span class="k">editable</span> <span class="nv">sitewide.box_three_title</span> <span class="nv">sitewide.box_three_content</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">                &lt;h4&gt;</span><span class="cp">{{</span> <span class="nv">sitewide.box_three_title</span> <span class="cp">}}</span><span class="x">&lt;/h4&gt;</span>
+<span class="x">                </span><span class="cp">{{</span> <span class="nv">sitewide.box_three_content</span><span class="o">|</span><span class="nf">richtext_filters</span><span class="o">|</span><span class="nf">safe</span> <span class="cp">}}</span><span class="x"></span>
+<span class="x">                </span><span class="cp">{%</span> <span class="k">endeditable</span> <span class="cp">%}</span><span class="x"></span>
+<span class="x">            &lt;/div&gt;</span>
+<span class="x">        &lt;/div&gt;&lt;!-- row-fluid --&gt;</span>
+<span class="x">    &lt;/div&gt;</span>
+<span class="x">&lt;/footer&gt;</span>
+<span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span><span class="x"></span>
+</pre></div>
+<p>After following these steps there will be a new Sitewide Content link under the Content dropdown in the Mezzanine admin. Clicking it will allow you to edit the footer (or whatever you have set up) that shows up across your entire site.</p>
+<p>See anything I did wrong, or want to let me know of any idea of your own, use the comments below!</p>
+</div>
+<div class="entry-meta entry-footer">
+<span class="entry-tags">
+Tagged:
+<a href="../tag/django/index.html">django</a>,
+<a href="../tag/mezzanine/index.html">mezzanine</a>
+</span>
+</div>
+<div class="separator"></div>
+</article>
+
+<script>
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'bitofpixels'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function () {
+    var s = document.createElement('script'); s.async = true;
+    s.type = 'text/javascript';
+    s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+    (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+}());
+</script>
+<div id="comments">
+<h3>Comments</h3>
+<div id="disqus_thread"></div>
+<script>
+var disqus_config = function () {
+    this.page.remote_auth_s3 = '';
+    this.page.api_key = '';
+}
+</script>
+<script>
+    var disqus_developer = 'False' == 'True';
+    var disqus_url = 'index.html';
+    var disqus_title = 'On SingletonAdmins and SitewideContent (editing sitewide content in Mezzanine\u0027s admin)';
+    var disqus_identifier = 'BlogPost-11';
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = '../../../bitofpixels.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+</div>
+</div>
+
+<div class="span3">
+<aside id="sidebar">
+<div id="search" class="widget widget-search">
+<form method="get" id="searchform" action="#">
+<input type="text" placeholder="To search type and hit enter..." value="" />
+</form>
+</div>
+<div class="widget blog-sidebar">
+<h3>Recent Posts</h3>
+<ul class="unstyled recent-posts">
+<li><a href="../upgrading-to-mezzanine-4/index.html">Upgrading to Mezzanine 4</a></li>
+<li><a href="../collecting-additional-information-on-a-per-product-basis-in-cartridge/index.html">Collecting additional information on a per product basis in Cartridge</a></li>
+<li><a href="../deploying-mezzanine-to-digital-ocean-using-the-included-fabfile/index.html">Deploying Mezzanine to Digital Ocean using the included fabfile</a></li>
+<li><a href="index.html">On SingletonAdmins and SitewideContent (editing sitewide content in Mezzanine&#39;s admin)</a></li>
+<li><a href="../mezzatheming-part-4-style-the-blog-and-beyond/index.html">MEZZaTHEMing Part 4: To the blog, and beyond</a></li>
+</ul>
+<h3>Archive</h3>
+<h6>2015</h6><ul class="unstyled">
+<li><a href="../archive/2015/7/index.html">July</a> (1)</li>
+</ul>
+<h6>2014</h6><ul class="unstyled">
+<li><a href="../archive/2014/5/index.html">May</a> (1)</li>
+<li><a href="../archive/2014/4/index.html">April</a> (1)</li>
+</ul>
+<h6>2013</h6><ul class="unstyled">
+<li><a href="../archive/2013/9/index.html">September</a> (5)</li>
+<li><a href="../archive/2013/8/index.html">August</a> (1)</li>
+<li><a href="../archive/2013/7/index.html">July</a> (2)</li>
+<li><a href="../archive/2013/6/index.html">June</a> (3)</li>
+</ul>
+<h3>Tags</h3>
+<ul class="unstyled tags">
+<li>
+<a href="../tag/mezzanine/index.html" class="tag-weight-4">mezzanine</a>
+(10)
+</li>
+<li>
+<a href="../tag/django/index.html" class="tag-weight-4">django</a>
+(12)
+</li>
+<li>
+<a href="../tag/mezzanine-theme/index.html" class="tag-weight-1">mezzanine theme</a>
+(4)
+</li>
+</ul>
+<h3>Authors</h3>
+<ul class="unstyled">
+<li><a href="../author/josh/index.html">Josh Cartmell</a>
+(14)</li>
+</ul>
+<h3>Feeds</h3>
+<a href="../feeds/rss/index.html">RSS</a> /
+<a href="../feeds/atom/index.html">Atom</a>
+</div>
+<div class="widget widget-social">
+<h3 class="widget-title">Elsewhere</h3>
+<ul>
+<li><a href="https://www.flickr.com/photos/joshcartmell"><i class="font-icon-social-flickr"></i></a></li>
+<li><a href="https://github.com/joshcartme"><i class="font-icon-social-github"></i></a></li>
+<li><a href="https://twitter.com/joshcartme"><i class="font-icon-social-twitter"></i></a></li>
+</ul>
+ </div>
+</aside>
+</div>
+
+</div>
+</section>
+</div>
+
+<footer>
+<div class="container">
+<div class="row">
+<nav id="social-footer">
+<ul>
+<li><a href="https://twitter.com/joshcartme" title=""><i class="font-icon-social-twitter"></i></a></li>
+</ul>
+</nav>
+</div>
+</div>
+</footer>
+
+
+<section id="footer-credits">
+<div class="container">
+<div class="row">
+<div class="span12">
+<p class="credits">&copy; 2020 <a target="_blank" href="https://joshc.io/">Josh Cartmell</a>. All rights reserved.</p>
+</div>
+</div>
+</div>
+</section>
+
+
+<a id="back-to-top" href="#">
+<i class="font-icon-arrow-simple-up"></i>
+</a>
+
+<script>
+
+var _gaq = _gaq || [['_trackPageview']];
+_gaq.unshift(['_setAccount', 'UA-31556206-1']);
+(function(d, t) {
+    var g = d.createElement(t),
+        s = d.getElementsByTagName(t)[0];
+    g.async = true;
+    g.src = '../../../www.google-analytics.com/ga.js';
+    s.parentNode.insertBefore(g, s);
+})(document, 'script');
+
+</script>
+</body>
+
+<!-- Mirrored from bitofpixels.com/blog/on-singletonadmins-and-sitewidecontent-editing-sitewide-content-in-mezzanines-admin/ by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 05 May 2020 23:52:13 GMT -->
+</html>

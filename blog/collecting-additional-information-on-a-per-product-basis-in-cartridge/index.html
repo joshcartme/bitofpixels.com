@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if (IE 7)&!(IEMobile)]><html class="no-js lt-ie9 lt-ie8" lang="en"><![endif]-->
+<!--[if (IE 8)&!(IEMobile)]><html class="no-js lt-ie9" lang="en"><![endif]-->
+<!--[if (IE 9)]><html class="no-js ie9" lang="en"><![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en-US"> <!--<![endif]-->
+
+<!-- Mirrored from bitofpixels.com/blog/collecting-additional-information-on-a-per-product-basis-in-cartridge/ by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 05 May 2020 23:51:35 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="keywords" content="django, mezzanine">
+<meta name="description" content="I recently was working on a project in which I was making use of Cartridge andneeded to collect extra info when users added particular products to their order.I wanted this to be toggleable via the backend so that certain products wouldrequire extra information and others wouldn&#39;t.">
+<title>Collecting additional information on a per product basis in Cartridge | Bit of Pixels</title>
+<link rel="alternate" type="application/rss+xml" title="RSS" href="../feeds/rss/index.html">
+<link rel="alternate" type="application/atom+xml" title="Atom" href="../feeds/atom/index.html">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="HandheldFriendly" content="true" />
+<meta name="MobileOptimized" content="320" />
+
+<!--[if IEMobile]>  <meta http-equiv="cleartype" content="on">  <![endif]-->
+<link rel="stylesheet" href="../../static/CACHE/css/4d40634b3931.css" type="text/css" />
+
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,300,300italic,400italic,600,600italic,700,700italic,800,800italic" rel='stylesheet' type='text/css'>
+
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../static/ico/apple-touch-icon-144-precomposed3860.png?v=1">
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="../../static/ico/apple-touch-icon-114-precomposed3860.png?v=1">
+<link rel="apple-touch-icon-precomposed" sizes="72x72" href="../../static/ico/apple-touch-icon-72-precomposed3860.png?v=1">
+<link rel="apple-touch-icon-precomposed" href="../../static/ico/apple-touch-icon-57-precomposed3860.png?v=1">
+<link rel="shortcut icon" href="../../static/ico/favicon5e1f.png?v=2">
+<link rel="apple-touch-icon" href="#">
+<link rel="apple-touch-icon" sizes="114x114" href="#">
+<link rel="apple-touch-icon" sizes="72x72" href="#">
+<link rel="apple-touch-icon" sizes="144x144" href="#">
+<script type="text/javascript" src="../../static/CACHE/js/4e8fecc2c196.js"></script>
+</head>
+<body id="body">
+
+<header>
+<div class="container">
+<div class="row">
+<div class="span2">
+<div id="logo">
+<a href="../../index.html" title="Bit of Pixels"><span class="logo-red">b</span><span class="logo-blue">P</span><span class="logo-green">x</span></a>
+</div>
+</div>
+<div class="span10">
+
+<a id="mobile-nav" class="menu-nav" href="#menu-nav"><span class="menu-icon"></span></a>
+
+<nav id="menu">
+<ul id="menu-nav"><li class="" id="dropdown-menu-home"><a href="../../index.html">Home</a></li><li class="dropdown active" id="dropdown-menu-blog"><a href="../index.html">
+Blog
+</a></li><li class="dropdown" id="dropdown-menu-portfolio"><a href="../../portfolio/index.html">
+Portfolio
+</a></li></ul>
+</nav>
+</div>
+</div>
+</div>
+</header>
+
+<section id="image-static">
+<div class="fullimage-container">
+<div class="pattern"></div>
+<img src="../../static/media/uploads/blog/.thumbnails/bos-1500x0.jpg">
+</div>
+</section>
+
+<section id="intro-box" class="single-post">
+<div class="container">
+<div class="row">
+<div class="span12">
+<h2 class="entry-title">Collecting additional information on a per product basis in Cartridge</h2>
+<div class="entry-meta">
+<span class="author">By Josh Cartmell</span>
+<span class="divider">/</span>
+<span class="published">5 years, 11 months ago</span>
+<span class="divider">/</span>
+<a href="index.html#disqus_thread" data-disqus-identifier="BlogPost-13">Comments</a>
+</div>
+<span class="arrow"></span>
+</div>
+</div>
+</div>
+</section>
+
+<div id="content">
+
+<section id="blog" class="container single-post">
+<div class="row">
+<div class="span9">
+
+<article class="post">
+<div class="entry-content">
+<p>I recently was working on a project in which I was making use of Cartridge and
+needed to collect extra info when users added particular products to their order.
+I wanted this to be toggleable via the backend so that certain products would
+require extra information and others wouldn't.</p>
+<p>My particular case was collecting a student ID, but these techniques should be
+applicable to many use cases. After some thought I figured out that there were
+two main areas of Cartridge functionality that I would need to modify. They
+were:</p>
+<ol>
+<li>Adding items to the cart</li>
+<li>Copying cart items to an order</li>
+</ol>
+<p>I don't think that modifying an external librarie's (in this case Cartridge)
+source code is a good idea so I didn't. To start out I added fields
+using Mezzanine's EXTRA_MODEL_FIELDS.</p>
+<h2>Adding extra fields</h2>
+<p>Inside the project's settings.py I added:</p>
+<div class="codehilite"><pre><span class="n">EXTRA_MODEL_FIELDS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span>
+        <span class="s">"cartridge.shop.models.Product.require_student_id"</span><span class="p">,</span>
+        <span class="s">"BooleanField"</span><span class="p">,</span>
+        <span class="p">(</span><span class="s">"Require student ID"</span><span class="p">,),</span>
+        <span class="p">{</span><span class="s">"help_text"</span><span class="p">:</span> <span class="s">'Check if a student id should be collected when this product is purchased'</span><span class="p">,</span>
+         <span class="s">"default"</span><span class="p">:</span> <span class="bp">False</span><span class="p">},</span>
+    <span class="p">),</span>
+    <span class="p">(</span>
+        <span class="s">"cartridge.shop.models.CartItem.student_id"</span><span class="p">,</span>
+        <span class="s">"CharField"</span><span class="p">,</span>
+        <span class="p">(</span><span class="s">"Student ID"</span><span class="p">,),</span>
+        <span class="p">{</span><span class="s">"blank"</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span> <span class="s">"max_length"</span><span class="p">:</span> <span class="mi">50</span><span class="p">},</span>
+    <span class="p">),</span>
+    <span class="p">(</span>
+        <span class="s">"cartridge.shop.models.OrderItem.student_id"</span><span class="p">,</span>
+        <span class="s">"CharField"</span><span class="p">,</span>
+        <span class="p">(</span><span class="s">"Student ID"</span><span class="p">,),</span>
+        <span class="p">{</span><span class="s">"blank"</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span> <span class="s">"max_length"</span><span class="p">:</span> <span class="mi">50</span><span class="p">},</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+<p>Next I created migrations:</p>
+<div class="codehilite"><pre>python manage.py schemamigration shop --auto --stdout &gt; shop_extras/migrations/0001_student_id_collect.py
+</pre></div>
+<p>Then I ran the migrations:</p>
+<div class="codehilite"><pre>python manage.py migrate shop_extras
+</pre></div>
+<blockquote>
+<p>The above assumes that shop_extras is a django app that is in the project's <code>INSTALLED_APPS</code> setting. You will need to manually create the directory migrations and add a blank <code>__init__.py</code> file inside of it.</p>
+</blockquote>
+<p>Next to expose the newly created <code>require_student_id</code> field I monkey patched the shop admin. Inside shop_extras/admin.py I put:</p>
+<div class="codehilite"><pre><span class="kn">from</span> <span class="nn">cartridge.shop.admin</span> <span class="kn">import</span> <span class="n">ProductAdmin</span>
+
+<span class="n">ProductAdmin</span><span class="o">.</span><span class="n">fieldsets</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s">"fields"</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s">"require_student_id"</span><span class="p">])</span>
+</pre></div>
+<p>Now the Product admin has a checkbox that can be used to toggle whether or not a particular product requires a student ID. From there I began to work on collecting the student ID when the product was added to the cart.</p>
+<h2>Cart modifications</h2>
+<blockquote>
+<p>I put all of the monkey patches discussed in the following sections in shop_extras/models.py. They can go anywhere that is imported at the time the site starts.</p>
+</blockquote>
+<h3>Collecting extra fields</h3>
+<p>First I monkey patched an additional field onto the <code>AddProductForm</code>:</p>
+<div class="codehilite"><pre><span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+<span class="kn">from</span> <span class="nn">cartridge.shop.forms</span> <span class="kn">import</span> <span class="n">AddProductForm</span>
+
+<span class="o">...</span>
+
+<span class="n">original_product_add_init</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">AddProductForm</span><span class="o">.</span><span class="n">__init__</span><span class="p">)</span> 
+<span class="k">def</span> <span class="nf">product_add_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Add student ID to add to cart form</span>
+<span class="sd">    """</span>
+    <span class="n">original_product_add_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product</span><span class="o">.</span><span class="n">require_student_id</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s">'student_id'</span><span class="p">]</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span>
+<span class="n">AddProductForm</span><span class="o">.</span><span class="n">__init__</span> <span class="o">=</span> <span class="n">product_add_init</span>
+</pre></div>
+<p>The above makes it so that if a Product requires a student ID an additional field to collect it is added to the <code>AddProductForm</code>. Collecting extra fields is great, but useless if they aren't stored somewhere. </p>
+<h3>Storing extra fields</h3>
+<p>Storing the extra fields was a bit more tricky. First I decided to keep a transient copy of the student ID in the variation that is attached to the <code>AddProductForm</code> in its clean method. I copied the original clean method from <code>AddProductForm</code> and added to it ending up with:</p>
+<div class="codehilite"><pre><span class="k">def</span> <span class="nf">product_add_clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Determine the chosen variation, validate it and assign it as</span>
+<span class="sd">    an attribute to be used in views.</span>
+
+<span class="sd">    Store the student ID if it exists</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+        <span class="k">return</span>
+    <span class="c"># Posted data will either be a sku, or product options for</span>
+    <span class="c"># a variation.</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">quantity</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">"quantity"</span><span class="p">)</span>
+    <span class="n">student_id</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product</span><span class="o">.</span><span class="n">require_student_id</span><span class="p">:</span>
+        <span class="n">student_id</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">"student_id"</span><span class="p">)</span>
+    <span class="c"># Ensure the product has a price if adding to cart.</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_cart</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">"unit_price__isnull"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">error</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="c"># Chosen options will be passed to the product's</span>
+        <span class="c"># variations.</span>
+        <span class="n">qs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product</span><span class="o">.</span><span class="n">variations</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c"># A product hasn't been given since we have a direct sku.</span>
+        <span class="n">qs</span> <span class="o">=</span> <span class="n">ProductVariation</span><span class="o">.</span><span class="n">objects</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">variation</span> <span class="o">=</span> <span class="n">qs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">ProductVariation</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="s">"invalid_options"</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c"># Validate stock if adding to cart.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_cart</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">variation</span><span class="o">.</span><span class="n">has_stock</span><span class="p">():</span>
+                <span class="n">error</span> <span class="o">=</span> <span class="s">"no_stock"</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">variation</span><span class="o">.</span><span class="n">has_stock</span><span class="p">(</span><span class="n">quantity</span><span class="p">):</span>
+                <span class="n">error</span> <span class="o">=</span> <span class="s">"no_stock_quantity"</span>
+    <span class="k">if</span> <span class="n">error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">ADD_PRODUCT_ERRORS</span><span class="p">[</span><span class="n">error</span><span class="p">])</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">variation</span> <span class="o">=</span> <span class="n">variation</span>
+    <span class="k">if</span> <span class="n">student_id</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variation</span><span class="o">.</span><span class="n">_student_id</span> <span class="o">=</span> <span class="n">student_id</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span>
+<span class="n">AddProductForm</span><span class="o">.</span><span class="n">clean</span> <span class="o">=</span> <span class="n">product_add_clean</span>
+</pre></div>
+<p>The parts I added were:</p>
+<div class="codehilite"><pre><span class="n">student_id</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product</span><span class="o">.</span><span class="n">require_student_id</span><span class="p">:</span>
+    <span class="n">student_id</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">"student_id"</span><span class="p">)</span>
+</pre></div>
+<p>and near the end:</p>
+<div class="codehilite"><pre><span class="k">if</span> <span class="n">student_id</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">variation</span><span class="o">.</span><span class="n">_student_id</span> <span class="o">=</span> <span class="n">student_id</span>
+</pre></div>
+<p>I had to copy the entire clean method (rather than a cleaner monkey patch like I did on the <code>__init__</code>) because I needed to pop <code>student_id</code> out of <code>data</code> which was created inside the clean method to avoid validation errors.</p>
+<p>At this point I had a transient copy of the student ID stored in the variation. Ultimately I needed the student ID to be stored in the database with on the <code>CartItem</code> model (remember we added that field using <code>EXTRA_MODEL_FIELDS</code>). To accomplish this I monkey patch the <code>Cart.add_item</code> method:</p>
+<div class="codehilite"><pre><span class="k">def</span> <span class="nf">add_item_mod</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variation</span><span class="p">,</span> <span class="n">quantity</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Increase quantity of existing item if SKU matches, otherwise create</span>
+<span class="sd">    new.</span>
+<span class="sd">    """</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s">"sku"</span><span class="p">:</span> <span class="n">variation</span><span class="o">.</span><span class="n">sku</span><span class="p">,</span> <span class="s">"unit_price"</span><span class="p">:</span> <span class="n">variation</span><span class="o">.</span><span class="n">price</span><span class="p">()}</span>
+    <span class="n">item</span><span class="p">,</span> <span class="n">created</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">created</span><span class="p">:</span>
+        <span class="n">item</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">force_text</span><span class="p">(</span><span class="n">variation</span><span class="p">)</span>
+        <span class="n">item</span><span class="o">.</span><span class="n">unit_price</span> <span class="o">=</span> <span class="n">variation</span><span class="o">.</span><span class="n">price</span><span class="p">()</span>
+        <span class="n">item</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">variation</span><span class="o">.</span><span class="n">product</span><span class="o">.</span><span class="n">get_absolute_url</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">student_id</span> <span class="o">=</span> <span class="n">variation</span><span class="o">.</span><span class="n">_student_id</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">variation</span><span class="o">.</span><span class="n">image</span>
+        <span class="k">if</span> <span class="n">image</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">image</span> <span class="o">=</span> <span class="n">force_text</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">file</span><span class="p">)</span>
+        <span class="n">variation</span><span class="o">.</span><span class="n">product</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">added_to_cart</span><span class="p">()</span>
+    <span class="n">item</span><span class="o">.</span><span class="n">quantity</span> <span class="o">+=</span> <span class="n">quantity</span>
+    <span class="n">item</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">Cart</span><span class="o">.</span><span class="n">add_item</span> <span class="o">=</span> <span class="n">add_item_mod</span>
+</pre></div>
+<p>In this case I needed to do things inside the <code>if created</code> block so I couldn't do as clean of a patch. As you can see I try to add the student ID to the <code>CartItem</code> catching any <code>AttributeError</code> which would mean that product didn't require a student ID.</p>
+<p>At this point I've collected and stored the student ID in the user's cart. The last piece of this puzzle is storing the student ID on the <code>OrderItem</code> when an order is made.</p>
+<h2>Storing custom fields on OrderItem</h2>
+<p>When I first looked at <code>Order.setup</code> I thought that the student ID field (which was added to both <code>CartItem</code> and <code>OrderItem</code>) would automatically be copied over. This didn't end up being the case, only fields that both models inherited from <code>SelectedProduct</code> were copied over. To get the field to copy I monkey patched <code>Order.setup</code>:</p>
+<div class="codehilite"><pre><span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Set order fields that are stored in the session, item_total</span>
+<span class="sd">    and total based on the given cart, and copy the cart items</span>
+<span class="sd">    to the order. Called in the final step of the checkout process</span>
+<span class="sd">    prior to the payment handler being called.</span>
+
+<span class="sd">    Also copies student IDs</span>
+<span class="sd">    """</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">session_key</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">user_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">id</span>
+    <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_fields</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="n">field</span><span class="p">])</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">total</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_total</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">cart</span><span class="o">.</span><span class="n">total_price</span><span class="p">()</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shipping_total</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shipping_total</span> <span class="o">=</span> <span class="n">Decimal</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shipping_total</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shipping_total</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">discount_total</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total</span> <span class="o">-=</span> <span class="n">Decimal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">discount_total</span><span class="p">)</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tax_total</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total</span> <span class="o">+=</span> <span class="n">Decimal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tax_total</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>  <span class="c"># We need an ID before we can add related items.</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">cart</span><span class="p">:</span>
+        <span class="n">product_fields</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">SelectedProduct</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">fields</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s">'student_id'</span><span class="p">]</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">f</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">product_fields</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="o">**</span><span class="n">item</span><span class="p">)</span>
+<span class="n">Order</span><span class="o">.</span><span class="n">setup</span> <span class="o">=</span> <span class="n">setup</span>
+</pre></div>
+<p>The only part I added was:</p>
+<div class="codehilite"><pre><span class="o">+</span> <span class="p">[</span><span class="s">'student_id'</span><span class="p">]</span>
+</pre></div>
+<p>to:</p>
+<div class="codehilite"><pre><span class="n">product_fields</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">SelectedProduct</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">fields</span><span class="p">]</span>
+</pre></div>
+<p>in the forloop near the end.</p>
+<h2>End</h2>
+<p>That's it. At this point when adding products that have <code>require_student_id</code> checked
+a student ID is collected. If the order is completed that student ID is
+saved on the <code>OrderItem</code> and visible in the line items at the bottom of the
+Order admin.</p>
+<p>If you have questions/comments or see a typo or something else I did wrong use the comments below!</p>
+</div>
+<div class="entry-meta entry-footer">
+<span class="entry-tags">
+Tagged:
+
+<a href="../tag/django/index.html">django</a>,
+<a href="../tag/mezzanine/index.html">mezzanine</a>
+</span>
+</div>
+<div class="separator"></div>
+</article>
+
+<script>
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'bitofpixels'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function () {
+    var s = document.createElement('script'); s.async = true;
+    s.type = 'text/javascript';
+    s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+    (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+}());
+</script>
+<div id="comments">
+<h3>Comments</h3>
+<div id="disqus_thread"></div>
+<script>
+var disqus_config = function () {
+    this.page.remote_auth_s3 = '';
+    this.page.api_key = '';
+}
+</script>
+<script>
+    var disqus_developer = 'False' == 'True';
+    var disqus_url = 'index.html';
+    var disqus_title = 'Collecting additional information on a per product basis in Cartridge';
+    var disqus_identifier = 'BlogPost-13';
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = '../../../bitofpixels.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+</div>
+</div>
+
+<div class="span3">
+<aside id="sidebar">
+<div id="search" class="widget widget-search">
+<form method="get" id="searchform" action="#">
+<input type="text" placeholder="To search type and hit enter..." value="" />
+</form>
+</div>
+<div class="widget blog-sidebar">
+<h3>Recent Posts</h3>
+<ul class="unstyled recent-posts">
+<li><a href="../upgrading-to-mezzanine-4/index.html">Upgrading to Mezzanine 4</a></li>
+<li><a href="index.html">Collecting additional information on a per product basis in Cartridge</a></li>
+<li><a href="../deploying-mezzanine-to-digital-ocean-using-the-included-fabfile/index.html">Deploying Mezzanine to Digital Ocean using the included fabfile</a></li>
+<li><a href="../on-singletonadmins-and-sitewidecontent-editing-sitewide-content-in-mezzanines-admin/index.html">On SingletonAdmins and SitewideContent (editing sitewide content in Mezzanine&#39;s admin)</a></li>
+<li><a href="../mezzatheming-part-4-style-the-blog-and-beyond/index.html">MEZZaTHEMing Part 4: To the blog, and beyond</a></li>
+</ul>
+<h3>Archive</h3>
+<h6>2015</h6><ul class="unstyled">
+<li><a href="../archive/2015/7/index.html">July</a> (1)</li>
+</ul>
+<h6>2014</h6><ul class="unstyled">
+<li><a href="../archive/2014/5/index.html">May</a> (1)</li>
+<li><a href="../archive/2014/4/index.html">April</a> (1)</li>
+</ul>
+<h6>2013</h6><ul class="unstyled">
+<li><a href="../archive/2013/9/index.html">September</a> (5)</li>
+<li><a href="../archive/2013/8/index.html">August</a> (1)</li>
+<li><a href="../archive/2013/7/index.html">July</a> (2)</li>
+<li><a href="../archive/2013/6/index.html">June</a> (3)</li>
+</ul>
+<h3>Tags</h3>
+<ul class="unstyled tags">
+<li>
+<a href="../tag/mezzanine/index.html" class="tag-weight-4">mezzanine</a>
+(10)
+</li>
+<li>
+<a href="../tag/django/index.html" class="tag-weight-4">django</a>
+(12)
+</li>
+<li>
+<a href="../tag/mezzanine-theme/index.html" class="tag-weight-1">mezzanine theme</a>
+(4)
+</li>
+</ul>
+<h3>Authors</h3>
+<ul class="unstyled">
+<li><a href="../author/josh/index.html">Josh Cartmell</a>
+(14)</li>
+</ul>
+<h3>Feeds</h3>
+<a href="../feeds/rss/index.html">RSS</a> /
+<a href="../feeds/atom/index.html">Atom</a>
+</div>
+<div class="widget widget-social">
+<h3 class="widget-title">Elsewhere</h3>
+<ul>
+<li><a href="https://www.flickr.com/photos/joshcartmell"><i class="font-icon-social-flickr"></i></a></li>
+<li><a href="https://github.com/joshcartme"><i class="font-icon-social-github"></i></a></li>
+<li><a href="https://twitter.com/joshcartme"><i class="font-icon-social-twitter"></i></a></li>
+</ul>
+</div>
+</aside>
+</div>
+
+</div>
+</section>
+</div>
+
+<footer>
+<div class="container">
+<div class="row">
+<nav id="social-footer">
+<ul>
+<li><a href="https://twitter.com/joshcartme" title=""><i class="font-icon-social-twitter"></i></a></li>
+</ul>
+</nav>
+</div>
+</div>
+</footer>
+
+
+<section id="footer-credits">
+<div class="container">
+<div class="row">
+<div class="span12">
+<p class="credits">&copy; 2020 <a target="_blank" href="https://joshc.io/">Josh Cartmell</a>. All rights reserved.</p>
+</div>
+</div>
+</div>
+</section>
+
+
+<a id="back-to-top" href="#">
+<i class="font-icon-arrow-simple-up"></i>
+</a>
+
+<script>
+
+var _gaq = _gaq || [['_trackPageview']];
+_gaq.unshift(['_setAccount', 'UA-31556206-1']);
+(function(d, t) {
+    var g = d.createElement(t),
+        s = d.getElementsByTagName(t)[0];
+    g.async = true;
+    g.src = '../../../www.google-analytics.com/ga.js';
+    s.parentNode.insertBefore(g, s);
+})(document, 'script');
+
+</script>
+</body>
+
+<!-- Mirrored from bitofpixels.com/blog/collecting-additional-information-on-a-per-product-basis-in-cartridge/ by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 05 May 2020 23:51:38 GMT -->
+</html>

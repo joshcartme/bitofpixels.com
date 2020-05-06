@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if (IE 7)&!(IEMobile)]><html class="no-js lt-ie9 lt-ie8" lang="en"><![endif]-->
+<!--[if (IE 8)&!(IEMobile)]><html class="no-js lt-ie9" lang="en"><![endif]-->
+<!--[if (IE 9)]><html class="no-js ie9" lang="en"><![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en-US"> <!--<![endif]-->
+
+<!-- Mirrored from bitofpixels.com/blog/upgrading-to-mezzanine-4/ by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 05 May 2020 23:51:14 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="keywords" content="django, mezzanine">
+<meta name="description" content="This post assumes your project is currently using Mezzanine 3.1.10 and up to date with South migrations.">
+<title>Upgrading to Mezzanine 4 | Bit of Pixels</title>
+<link rel="alternate" type="application/rss+xml" title="RSS" href="../feeds/rss/index.html">
+<link rel="alternate" type="application/atom+xml" title="Atom" href="../feeds/atom/index.html">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="HandheldFriendly" content="true" />
+<meta name="MobileOptimized" content="320" />
+
+<!--[if IEMobile]>  <meta http-equiv="cleartype" content="on">  <![endif]-->
+<link rel="stylesheet" href="../../static/CACHE/css/4d40634b3931.css" type="text/css" />
+
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,300,300italic,400italic,600,600italic,700,700italic,800,800italic" rel='stylesheet' type='text/css'>
+
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../static/ico/apple-touch-icon-144-precomposed3860.png?v=1">
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="../../static/ico/apple-touch-icon-114-precomposed3860.png?v=1">
+<link rel="apple-touch-icon-precomposed" sizes="72x72" href="../../static/ico/apple-touch-icon-72-precomposed3860.png?v=1">
+<link rel="apple-touch-icon-precomposed" href="../../static/ico/apple-touch-icon-57-precomposed3860.png?v=1">
+<link rel="shortcut icon" href="../../static/ico/favicon5e1f.png?v=2">
+<link rel="apple-touch-icon" href="#">
+<link rel="apple-touch-icon" sizes="114x114" href="#">
+<link rel="apple-touch-icon" sizes="72x72" href="#">
+<link rel="apple-touch-icon" sizes="144x144" href="#">
+<script type="text/javascript" src="../../static/CACHE/js/4e8fecc2c196.js"></script>
+</head>
+<body id="body">
+
+<header>
+<div class="container">
+<div class="row">
+<div class="span2">
+<div id="logo">
+<a href="../../index.html" title="Bit of Pixels"><span class="logo-red">b</span><span class="logo-blue">P</span><span class="logo-green">x</span></a>
+</div>
+</div>
+<div class="span10">
+
+<a id="mobile-nav" class="menu-nav" href="#menu-nav"><span class="menu-icon"></span></a>
+
+<nav id="menu">
+<ul id="menu-nav"><li class="" id="dropdown-menu-home"><a href="../../index.html">Home</a></li><li class="dropdown active" id="dropdown-menu-blog"><a href="../index.html">
+Blog
+</a></li><li class="dropdown" id="dropdown-menu-portfolio"><a href="../../portfolio/index.html">
+Portfolio
+</a></li></ul>
+</nav>
+</div>
+</div>
+</div>
+</header>
+
+<section id="image-static">
+<div class="fullimage-container">
+<div class="pattern"></div>
+<img src="../../static/media/uploads/blog/.thumbnails/mesa-1500x0.jpg">
+</div>
+</section>
+
+<section id="intro-box" class="single-post">
+<div class="container">
+<div class="row">
+<div class="span12">
+<h2 class="entry-title">Upgrading to Mezzanine 4</h2>
+<div class="entry-meta">
+<span class="author">By Josh Cartmell</span>
+<span class="divider">/</span>
+<span class="published">4 years, 9 months ago</span>
+<span class="divider">/</span>
+<a href="index.html#disqus_thread" data-disqus-identifier="BlogPost-14">Comments</a>
+</div>
+<span class="arrow"></span>
+</div>
+</div>
+</div>
+</section>
+
+<div id="content">
+
+<section id="blog" class="container single-post">
+<div class="row">
+<div class="span9">
+
+<article class="post">
+<div class="entry-content">
+<p><em>This post assumes your project is currently using Mezzanine 3.1.10 and up to date with South migrations.</em></p>
+<p>To get started install Mezzanine 4 into a fresh virtualenv and create a Mezzanine 4 project.</p>
+<div class="codehilite"><pre><span class="nv">$ </span>virtualenv MEZ4
+<span class="nv">$ </span><span class="nb">source </span>MEZ4/bin/active
+<span class="nv">$ </span>pip install mezzanine
+<span class="nv">$ </span>mezzanine-project mez4proj
+</pre></div>
+<p>We will refer to <code>mez4proj</code> throughout the process of upgrading your project to Mezzanine 4.</p>
+<p>As I write this blog post I'm updating <a href="https://secure.mezzathe.me/theme/adept/">Adept</a> to support Mezzanine 4 so I may refer to the project being updated as <code>adept</code>. Right now <code>adept</code> has the old project structure and looks like this:</p>
+<div class="codehilite"><pre>__init__.py
+deploy
+    crontab
+    gunicorn.conf.py
+    live_settings.py
+    nginx.conf
+    supervisor.conf
+dev.db
+fabfile.py
+local_settings.py
+manage.py
+settings.py
+static
+templates
+theme
+    __init__.py
+    admin.py
+    blog_mods
+        __init__.py
+        admin.py
+        migrations
+            # migration files
+        models.py
+    defaults.py
+    migrations
+        # migration files
+    models.py
+    page_processors.py
+    portfolio
+        __init__.py
+        admin.py
+        migrations
+            # migration files
+        models.py
+        page_processors.py
+        templates
+    static
+        # static files
+    templates
+        # template files
+    templatetags
+        __init__.py
+        adept_tags.py
+urls.py
+wsgi.py
+</pre></div>
+<p>There is a single top level app, <code>theme</code> which contains two sub apps <code>blog_mods</code> and <code>portfolio</code>. Let's get started!</p>
+<h2>Update your project's layout</h2>
+<ol>
+<li>
+<p>Create a folder in your project with the same name as the project, move everything into it except your <code>static</code> directory and database (if using SQLite). Add an empty file called <code>__init__.py</code> to your top level project folder<br></p>
+<div class="codehilite"><pre><span class="nv">$ </span>touch __init__.py
+</pre></div>
+</li>
+<li>
+<p>Within the new folder delete <code>deploy</code>, <code>manage.py</code>, <code>wsgi.py</code> and <code>fabfile.py</code></p>
+<blockquote>
+<p>If you have made changes to any of the files you are instructed to delete above, <strong>do not delete them</strong>! Instead move them into the correct place. I've decided to delete them to upgrade to the latest and greatest from Mezzanine.</p>
+</blockquote>
+</li>
+<li>Copy <code>deploy</code>, <code>manage.py</code>, and <code>fabfile.py</code> from <code>mez4proj</code> to the top level of your project. Copy <code>wsgi.py</code> from <code>mez4proj/mez4proj</code> to the newly created folder.</li>
+<li>Move any apps located in your project up to the top level, in my case I move <code>theme</code> from the newly created <code>adept/adpet</code> up one directory to reside in the top level <code>adept</code> directory. </li>
+<li>If you are using SQLite also move your database file to the top level. The top level of <code>adept</code> now looks like:<br><div class="codehilite"><pre><span class="nv">$ </span>ls
+__init__.py      deploy           fabfile.py       requirements.txt
+adept            dev.db           manage.py        theme
+</pre></div>
+</li>
+</ol>
+<h2>Update files</h2>
+<h3>manage.py and wsgi.py</h3>
+<p>Open the copied <code>manage.py</code> and <code>wsgi.py</code> and replace any references to <code>mez4proj</code> with the correct name of your project.</p>
+<h3>settings.py</h3>
+<p>At this point things get a bit dicey. It's likely that you have made many modifications to your <code>settings.py</code> file but there have also been changes to the <code>settings.py</code> file that comes with Mezzanine. Personally I want the <code>settings.py</code> that ships with <code>adept</code> to be as close to the one that comes with Mezzanine as possible. Here are the steps I use to merge them.</p>
+<ol>
+<li>
+<p>Rename <code>settings.py</code> to <code>settings_old.py</code><br></p>
+<div class="codehilite"><pre>mv adept/settings.py adept/settings_old.py
+</pre></div>
+</li>
+<li>
+<p>Copy <code>settings.py</code> from <code>mez4proj/mez4proj</code> to <code>adept/adept</code></p>
+</li>
+<li>Open the newly copied <code>settings.py</code> and <code>settings_old.py</code> in a text editor and copy over any needed changes from <code>settings_old.py</code> to <code>settings.py</code></li>
+</ol>
+<p>In my case the changes I made to the newly copied <code>settings.py</code> included:</p>
+<ol>
+<li>Copy <code>ADMIN_MENU_ORDER</code> from <code>settings_old.py</code></li>
+<li>Copy <code>PAGE_MENU_TEMPLATES</code> from <code>settings_old.py</code></li>
+<li>Copy <code>EXTRA_MODEL_FIELDS</code> from <code>settings_old.py</code></li>
+<li>uncomment <code>BLOG_USE_FEATURED_IMAGE = True</code></li>
+<li>Update <code>INSTALLED_APPS</code> with apps I had in <code>settings_old.py</code><blockquote>
+<p>Do not copy <code>USE_SOUTH = True</code>, we will be updating to Django migrations</p>
+</blockquote>
+</li>
+</ol>
+<h3>urls.py</h3>
+<p>Merge your project's <code>urls.py</code> and <code>urls.py</code> from <code>mez4proj</code>. You can use a similar process to what we did above with <code>settings.py</code> or just eyeball it. My <code>urls.py</code> files tend to be smaller and easier to merge than <code>settings.py</code>.</p>
+<h2>Migrations</h2>
+<p>As of Django 1.7 migrations are a core feature of Django. South is a thing of the past and since Mezzanine 4 requires Django 1.7+ we will need Django migrations. <a href="https://docs.djangoproject.com/en/1.8/topics/migrations/#upgrading-from-south">These</a> are the Django docs on upgrading from South, I will borrow from them heavily.</p>
+<blockquote>
+<p>The Django docs tell you to delete all your current migrations. You can do that but I prefer to rename the current migration folders from <code>migrations</code> to <code>south_migrations</code>. If you prefer to do exactly as the Django docs say read them, delete all numbered migrations files from your <code>migrations</code> folder[s] and skip to step 3</p>
+</blockquote>
+<h3>Create Django Migrations</h3>
+<blockquote>
+<p>If you use <code>EXTRA_MODEL_FIELDS</code> make sure to check out the section with that title below before starting these steps</p>
+</blockquote>
+<ol>
+<li>Rename <code>migrations</code> to <code>south_migrations</code></li>
+<li>Everywhere you now have a <code>south_migrations</code> directory create a new directory called <code>migrations</code> and add an empty <code>__init__.py</code> file to it.</li>
+<li>
+<p>At this point it is important that you have <code>migrations</code> folders that are empty except for an <code>__init__.py</code>, i.e. they look like this:<br></p>
+<div class="codehilite"><pre>migrations
+    __init__.py
+</pre></div>
+</li>
+<li>
+<p>Make Django migrations:<br></p>
+<div class="codehilite"><pre><span class="nv">$ </span>python manage.py makemigrations
+</pre></div>
+</li>
+<li>
+<p>Fake the migrations since your database is already up to date<br></p>
+<div class="codehilite"><pre><span class="nv">$ </span>python manage.py migrate --fake-initial
+</pre></div>
+</li>
+</ol>
+<h3>EXTRA_MODEL_FIELDS</h3>
+<p>Using south, it was <a href="http://dodgyville.tumblr.com/post/23028930440/new-fields-in-mezzanine-without-editing-or">pretty easy</a> to have arbitrary migrations for one app in another app. This made making migrations for <code>EXTRA_MODEL_FIELDS</code> fairly straightforward. Django migrations are not flexible in the same way and expect all migrations for an app to be in one place. The following is how I've gotten <code>EXTRA_MODEL_FIELDS</code> to work with Django migrations. It's ugly, hacky and brittle. If you know of a better way please let me know in the comments below!</p>
+<h4>Steps</h4>
+<ol>
+<li>Prior to doing the "Create Django Migrations" steps above comment out <code>EXTRA_MODEL_FIELDS</code> in your project's <code>settings.py</code>.</li>
+<li>Do the migration steps above except do not complete step 5 yet.</li>
+<li>Uncomment <code>EXTRA_MODEL_FIELDS</code></li>
+<li>
+<p>Run<br></p>
+<div class="codehilite"><pre><span class="nv">$ </span>python manage.py makemigrations <span class="o">[</span>APPNAME<span class="o">]</span> --dry-run --verbosity 3
+</pre></div>
+<p>where <code>[APPNAME]</code> is the name of the app your <code>EXTRA_MODEL_FIELDS</code> modifies. You will need to repeat this for each app <code>EXTRA_MODEL_FIELDS</code> modifies</p>
+</li>
+<li>
+<p>In my case <code>EXTRA_MODEL_FIELDS</code> adds a field to BlogPost and I get the following output:<br></p>
+<div class="codehilite"><pre><span class="err">$</span> <span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">makemigrations</span> <span class="n">blog</span> <span class="o">--</span><span class="n">dry</span><span class="o">-</span><span class="n">run</span> <span class="o">--</span><span class="n">verbosity</span> <span class="mi">3</span>
+
+<span class="n">Migrations</span> <span class="k">for</span> <span class="s">'blog'</span><span class="p">:</span>
+  <span class="mo">0003</span><span class="n">_blogpost_featured_video</span><span class="o">.</span><span class="n">py</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">Add</span> <span class="n">field</span> <span class="n">featured_video</span> <span class="n">to</span> <span class="n">blogpost</span>
+<span class="n">Full</span> <span class="n">migrations</span> <span class="nb">file</span> <span class="s">'0003_blogpost_featured_video.py'</span><span class="p">:</span>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">unicode_literals</span>
+
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span><span class="p">,</span> <span class="n">migrations</span>
+
+<span class="k">class</span> <span class="nc">Migration</span><span class="p">(</span><span class="n">migrations</span><span class="o">.</span><span class="n">Migration</span><span class="p">):</span>
+
+    <span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s">'blog'</span><span class="p">,</span> <span class="s">'0002_auto_20150527_1555'</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="n">operations</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">migrations</span><span class="o">.</span><span class="n">AddField</span><span class="p">(</span>
+            <span class="n">model_name</span><span class="o">=</span><span class="s">'blogpost'</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s">'featured_video'</span><span class="p">,</span>
+            <span class="n">field</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">help_text</span><span class="o">=</span><span class="s">'Optional, an iframe here will override any featured image above'</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="s">'Featured video'</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="p">),</span>
+    <span class="p">]</span>
+</pre></div>
+</li>
+<li>
+<p>Copy everything starting with <code># -*- coding: utf-8 -*-</code> and paste it into a new file in a <code>migrations</code> folder in one of your apps. In the case of <code>adept</code> I create <code>adept/theme/blog_modes/migrations/0002_blogpost_featured_video.py</code></p>
+<blockquote>
+<p>Django doesn't actually care about the numbers at the beginning of migrations, those are just to make it easier for humans to tell the order of migrations.</p>
+</blockquote>
+</li>
+<li>
+<p>Add the following to the top, just under the imports, of your new migrations file<br></p>
+<div class="codehilite"><pre><span class="k">class</span> <span class="n">AddExtraField</span>(<span class="n">migrations</span>.<span class="n">AddField</span>):
+
+    <span class="n">def</span> <span class="n">__init__</span>(<span class="k">self</span>, *<span class="n">args</span>, **<span class="n">kwargs</span>):
+        <span class="k">if</span> <span class="s">'app_label'</span> <span class="n">in</span> <span class="n">kwargs:</span>
+            <span class="k">self</span>.<span class="n">app_label</span> = <span class="n">kwargs</span>.<span class="nb">pop</span>(<span class="s">'app_label'</span>)
+        <span class="n">else:</span>
+            <span class="k">self</span>.<span class="n">app_label</span> = <span class="n">None</span>
+        <span class="n">super</span>(<span class="n">AddExtraField</span>, <span class="k">self</span>).<span class="n">__init__</span>(*<span class="n">args</span>, **<span class="n">kwargs</span>)
+
+    <span class="n">def</span> <span class="n">state_forwards</span>(<span class="k">self</span>, <span class="n">app_label</span>, <span class="k">state</span>):
+        <span class="n">super</span>(<span class="n">AddExtraField</span>, <span class="k">self</span>).<span class="n">state_forwards</span>(<span class="k">self</span>.<span class="n">app_label</span> <span class="o">or</span> <span class="n">app_label</span>, <span class="k">state</span>)
+
+    <span class="n">def</span> <span class="n">database_forwards</span>(<span class="k">self</span>, <span class="n">app_label</span>, <span class="n">schema_editor</span>, <span class="n">from_state</span>, <span class="n">to_state</span>):
+        <span class="n">super</span>(<span class="n">AddExtraField</span>, <span class="k">self</span>).<span class="n">database_forwards</span>(
+            <span class="k">self</span>.<span class="n">app_label</span> <span class="o">or</span> <span class="n">app_label</span>, <span class="n">schema_editor</span>, <span class="n">from_state</span>, <span class="n">to_state</span>)
+
+    <span class="n">def</span> <span class="n">database_backwards</span>(<span class="k">self</span>, <span class="n">app_label</span>, <span class="n">schema_editor</span>, <span class="n">from_state</span>, <span class="n">to_state</span>):
+        <span class="n">super</span>(<span class="n">AddExtraField</span>, <span class="k">self</span>).<span class="n">database_backwards</span>(
+            <span class="k">self</span>.<span class="n">app_label</span> <span class="o">or</span> <span class="n">app_label</span>, <span class="n">schema_editor</span>, <span class="n">from_state</span>, <span class="n">to_state</span>)
+</pre></div>
+</li>
+<li>
+<p>Change instances of <code>migrations.AddField</code> to <code>AddExtraField</code>.</p>
+</li>
+<li>
+<p>To the end of any <code>AddExtraField</code> call add a new kwarg, <code>app_label</code> and set it equal to the string of the app this migration is modifying.</p>
+</li>
+<li>
+<p>In my case the migration file ends up looking like this:<br></p>
+<div class="codehilite"><pre><span class="c"># -*- coding: utf-8 -*-</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">unicode_literals</span>
+
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span><span class="p">,</span> <span class="n">migrations</span>
+
+<span class="k">class</span> <span class="nc">AddExtraField</span><span class="p">(</span><span class="n">migrations</span><span class="o">.</span><span class="n">AddField</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s">'app_label'</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app_label</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">'app_label'</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app_label</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AddExtraField</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">state_forwards</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_label</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AddExtraField</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">state_forwards</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app_label</span> <span class="ow">or</span> <span class="n">app_label</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">database_forwards</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_label</span><span class="p">,</span> <span class="n">schema_editor</span><span class="p">,</span> <span class="n">from_state</span><span class="p">,</span> <span class="n">to_state</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AddExtraField</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">database_forwards</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app_label</span> <span class="ow">or</span> <span class="n">app_label</span><span class="p">,</span> <span class="n">schema_editor</span><span class="p">,</span> <span class="n">from_state</span><span class="p">,</span> <span class="n">to_state</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">database_backwards</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_label</span><span class="p">,</span> <span class="n">schema_editor</span><span class="p">,</span> <span class="n">from_state</span><span class="p">,</span> <span class="n">to_state</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AddExtraField</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">database_backwards</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app_label</span> <span class="ow">or</span> <span class="n">app_label</span><span class="p">,</span> <span class="n">schema_editor</span><span class="p">,</span> <span class="n">from_state</span><span class="p">,</span> <span class="n">to_state</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Migration</span><span class="p">(</span><span class="n">migrations</span><span class="o">.</span><span class="n">Migration</span><span class="p">):</span>
+
+    <span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s">'blog'</span><span class="p">,</span> <span class="s">'0002_auto_20150527_1555'</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="n">operations</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">AddExtraField</span><span class="p">(</span>
+            <span class="n">model_name</span><span class="o">=</span><span class="s">'blogpost'</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s">'featured_video'</span><span class="p">,</span>
+            <span class="n">field</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">help_text</span><span class="o">=</span><span class="s">'Optional, an iframe here will override any featured image above'</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="s">'Featured video'</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">app_label</span><span class="o">=</span><span class="s">"blog"</span>
+        <span class="p">),</span>
+    <span class="p">]</span>
+</pre></div>
+<p>All it does is add a <code>featured_video</code> field to blog posts.</p>
+</li>
+<li>
+<p>Fake all migration:<br></p>
+<div class="codehilite"><pre><span class="nv">$ </span>python manage.py migrate --fake-initial
+</pre></div>
+</li>
+</ol>
+<h2>Closing</h2>
+<p>Run your project, it should work! At this point you can delete <code>settings_old.py</code> from your project. You may want to keep a copy around somewhere to refer to just in case.</p>
+<p>The layout of the upgraded <code>adept</code> now looks like this:</p>
+<div class="codehilite"><pre>__init__.py
+adept
+    __init__.py
+    local_settings.py
+    settings.py
+    urls.py
+    wsgi.py
+deploy
+    crontab
+    gunicorn.conf.py
+    live_settings.py
+    nginx.conf
+    supervisor.conf
+dev.db
+fabfile.py
+manage.py
+static
+theme
+    __init__.py
+    admin.py
+    blog_mods
+        __init__.py
+        admin.py
+        migrations
+            # migration files
+        models.py
+    defaults.py
+    migrations
+        # migration files
+    models.py
+    page_processors.py
+    portfolio
+        __init__.py
+        admin.py
+        migrations
+            # migration files
+        models.py
+        page_processors.py
+        templates
+    static
+        # static files
+    templates
+        # template files
+    templatetags
+        __init__.py
+        adept_tags.py
+</pre></div>
+<h2>Gotchas</h2>
+<ul>
+<li>Certain types of monkey patches can no longer be in models.py so if you run into errors complaining of models not being loaded, that may be it.</li>
+</ul>
+</div>
+<div class="entry-meta entry-footer">
+<span class="entry-tags">
+Tagged:
+<a href="../tag/django/index.html">django</a>,
+<a href="../tag/mezzanine/index.html">mezzanine</a>
+</span>
+</div>
+<div class="separator"></div>
+</article>
+
+<script>
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'bitofpixels'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function () {
+    var s = document.createElement('script'); s.async = true;
+    s.type = 'text/javascript';
+    s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+    (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+}());
+</script>
+<div id="comments">
+<h3>Comments</h3>
+<div id="disqus_thread"></div>
+<script>
+var disqus_config = function () {
+    this.page.remote_auth_s3 = '';
+    this.page.api_key = '';
+}
+</script>
+<script>
+    var disqus_developer = 'False' == 'True';
+    var disqus_url = 'index.html';
+    var disqus_title = 'Upgrading to Mezzanine 4';
+    var disqus_identifier = 'BlogPost-14';
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = '../../../bitofpixels.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+</div>
+</div>
+
+<div class="span3">
+<aside id="sidebar">
+<div id="search" class="widget widget-search">
+<form method="get" id="searchform" action="#">
+<input type="text" placeholder="To search type and hit enter..." value="" />
+</form>
+</div>
+<div class="widget blog-sidebar">
+<h3>Recent Posts</h3>
+<ul class="unstyled recent-posts">
+<li><a href="index.html">Upgrading to Mezzanine 4</a></li>
+<li><a href="../collecting-additional-information-on-a-per-product-basis-in-cartridge/index.html">Collecting additional information on a per product basis in Cartridge</a></li>
+<li><a href="../deploying-mezzanine-to-digital-ocean-using-the-included-fabfile/index.html">Deploying Mezzanine to Digital Ocean using the included fabfile</a></li>
+<li><a href="../on-singletonadmins-and-sitewidecontent-editing-sitewide-content-in-mezzanines-admin/index.html">On SingletonAdmins and SitewideContent (editing sitewide content in Mezzanine&#39;s admin)</a></li>
+<li><a href="../mezzatheming-part-4-style-the-blog-and-beyond/index.html">MEZZaTHEMing Part 4: To the blog, and beyond</a></li>
+</ul>
+<h3>Archive</h3>
+<h6>2015</h6><ul class="unstyled">
+<li><a href="../archive/2015/7/index.html">July</a> (1)</li>
+</ul>
+<h6>2014</h6><ul class="unstyled">
+<li><a href="../archive/2014/5/index.html">May</a> (1)</li>
+<li><a href="../archive/2014/4/index.html">April</a> (1)</li>
+</ul>
+<h6>2013</h6><ul class="unstyled">
+<li><a href="../archive/2013/9/index.html">September</a> (5)</li>
+<li><a href="../archive/2013/8/index.html">August</a> (1)</li>
+<li><a href="../archive/2013/7/index.html">July</a> (2)</li>
+<li><a href="../archive/2013/6/index.html">June</a> (3)</li>
+</ul>
+<h3>Tags</h3>
+<ul class="unstyled tags">
+<li>
+<a href="../tag/mezzanine/index.html" class="tag-weight-4">mezzanine</a>
+(10)
+</li>
+<li>
+<a href="../tag/django/index.html" class="tag-weight-4">django</a>
+(12)
+</li>
+<li>
+<a href="../tag/mezzanine-theme/index.html" class="tag-weight-1">mezzanine theme</a>
+(4)
+</li>
+</ul>
+<h3>Authors</h3>
+<ul class="unstyled">
+<li><a href="../author/josh/index.html">Josh Cartmell</a>
+(14)</li>
+</ul>
+<h3>Feeds</h3>
+<a href="../feeds/rss/index.html">RSS</a> /
+<a href="../feeds/atom/index.html">Atom</a>
+</div>
+<div class="widget widget-social">
+<h3 class="widget-title">Elsewhere</h3>
+<ul>
+<li><a href="https://www.flickr.com/photos/joshcartmell"><i class="font-icon-social-flickr"></i></a></li>
+<li><a href="https://github.com/joshcartme"><i class="font-icon-social-github"></i></a></li>
+<li><a href="https://twitter.com/joshcartme"><i class="font-icon-social-twitter"></i></a></li>
+</ul>
+</div>
+</aside>
+</div>
+
+</div>
+</section>
+</div>
+
+<footer>
+<div class="container">
+<div class="row">
+<nav id="social-footer">
+<ul>
+<li><a href="https://twitter.com/joshcartme" title=""><i class="font-icon-social-twitter"></i></a></li>
+</ul>
+</nav>
+</div>
+</div>
+</footer>
+
+
+<section id="footer-credits">
+<div class="container">
+<div class="row">
+<div class="span12">
+<p class="credits">&copy; 2020 <a target="_blank" href="https://joshc.io/">Josh Cartmell</a>. All rights reserved.</p>
+</div>
+</div>
+</div>
+</section>
+
+
+<a id="back-to-top" href="#">
+<i class="font-icon-arrow-simple-up"></i>
+</a>
+
+<script>
+
+var _gaq = _gaq || [['_trackPageview']];
+_gaq.unshift(['_setAccount', 'UA-31556206-1']);
+(function(d, t) {
+    var g = d.createElement(t),
+        s = d.getElementsByTagName(t)[0];
+    g.async = true;
+    g.src = '../../../www.google-analytics.com/ga.js';
+    s.parentNode.insertBefore(g, s);
+})(document, 'script');
+
+</script>
+</body>
+
+<!-- Mirrored from bitofpixels.com/blog/upgrading-to-mezzanine-4/ by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 05 May 2020 23:51:27 GMT -->
+</html>
